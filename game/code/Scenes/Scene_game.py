@@ -45,7 +45,7 @@ def SceneGameCreate(self):
     self.counter = 0
     # evenement
     self.evenement = Evenement()
-    self.H_R = Walkers()
+    self.H_R = self.game.save.walkers
 
 
 def SceneGameRun(self):
@@ -117,6 +117,8 @@ def SceneGameHandleEvents(self, event):
         elif event.unicode == 'w':
             self.world.overlay_mode = "water"
             self.hud_manager["main"].overlay.text = "water"
+        elif event.unicode =='s':
+            self.game.save.print()
     if event.type in [pygame.KEYUP, pygame.KEYDOWN]:
         if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_UP]:
             self.camera.keys[event.key] = not self.camera.keys[event.key]

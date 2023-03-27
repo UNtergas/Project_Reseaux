@@ -1,6 +1,6 @@
 import os
 import pathlib
-import pickle
+import json
 
 from const import MAP_SIZE
 from Building import *
@@ -27,23 +27,33 @@ class Save():
         self.name = name
         self.size = 0
 
-    def serialize(self):
-        path = pathlib.PurePath(os.path.dirname(
-            os.path.abspath(__file__)), "../saves")
-        with open(pathlib.Path(path, f"{self.name}.save"), "wb") as f:
-            pickle.dump(self, f)
+    def print(self):
+        map = []
+        walker = []
+        for x in range(MAP_SIZE[0]):
+            for y in range(MAP_SIZE[1]):
+                name = self.map.Building[x][y].name
+                risk_fire = self.map.Building[x][y].risk_fire
+                time_under_effect = self.map.Building[x][y].time_under_effect
+                map.append(
+                    {
+                        'name': name,
+                        "risk": risk_fire,
+                        "time_under_effect": time_under_effect
+                    }
+                )
 
-    @staticmethod
-    def deserialize(path: str) -> object:
-        with open(path, "rb") as f:
-            return pickle.load(f)
-
-    @staticmethod
-    def getSavesNames():
-        path = pathlib.PurePath(os.path.dirname(
-            os.path.abspath(__file__)), "../saves")
-
-        return [
-            fileName.split(".")[0]
-            for fileName in os.listdir(path)
-            if fileName.endswith(".save")]
+        if self.walkers.listWalker['Prefect'] is not None:
+            for prefect in self.walkers.listWalker['Prefect']:
+                pos = prefect.pos
+                walker.append(
+                    {
+                        'pos': pos
+                    }
+                )
+        save = {
+            "map": map,
+            "walker": walker
+        }
+        with open("saves/save.json", "w") as savefile:
+            json.dump(save, savefile)

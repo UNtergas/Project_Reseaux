@@ -35,7 +35,7 @@ class Building:
         self.name = None  # {Tent,Temples,Prefecture,Well-water..}
         self.size = 1
 
-        self.risk_collapse = 0  # 0:pas de risk
+        #self.risk_collapse = 0  # 0:pas de risk
         self.risk_fire = 0
         self.canRemove = True
         self.canFire = False
