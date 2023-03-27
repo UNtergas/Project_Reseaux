@@ -9,6 +9,7 @@ import random
 class Evenement:
 
     def __init__(self) -> None:
+        global timer
         self.timer = pygame.time.get_ticks()
         self.game_speed = 1
         self.day = 0.05
@@ -23,7 +24,7 @@ class Evenement:
         self.day_pass += self.day*self.game_speed
 
     def change_game_speed(self, speed):
-        self.game_speed = speed
+        pass
 
     def change_building_timer(self, listonFire):
         for building in listonFire:
