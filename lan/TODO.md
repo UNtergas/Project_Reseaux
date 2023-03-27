@@ -1,4 +1,4 @@
 # LAN Connection
 
-    Send nude
-    Receive nude
+    TCP : Protocol
+    Packet : array of global variable , time_send,
