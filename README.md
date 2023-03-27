@@ -12,10 +12,20 @@
 
 # IPC
 
-# Multi player Inter face
+# Multi-player Ingame Interface
 
-    Time variable : Khang
-    Processing action based on time : Khang + Phong
-    Conflict resolving : Phong
+    Time variable : 🔴
+    save needed data into save.json : ✅
+    load json to game inter face :🔜
+    load action into data.json : 🔴
+    event listening on data.json : 🔴
+    Processing event based on time : 🔴
+    Priority of acion : 🔴
+    Conflict resolving : 🔴
 
 # Rapport
+
+    Intro
+    Method
+    Demo
+    Soutenance
