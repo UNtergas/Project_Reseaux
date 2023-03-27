@@ -1,6 +1,13 @@
 
 from const import *
 from Utils import cartCoToIsoCo
+import numpy as np
+TypeMap = np.empty((40, 40), dtype=object)
+
+
+def ipc(pos, type):
+    TypeMap[pos[0], pos[1]] = type
+    return TypeMap
 
 
 def type_of_tile(grid, name):
@@ -129,6 +136,7 @@ class Building:
 
 class Tent (Building):
     def __init__(self, pos):
+        ipc(pos, 'Tent')
         super().__init__(pos)
         self.canFire = True
         self.tileImage = pygame.image.load(
@@ -207,6 +215,7 @@ class Tent_niv_2(Tent):
 class Prefecture(Building):
     def __init__(self, pos):
         super().__init__(pos)
+        ipc(pos, 'Prefecture')
         self.tileImage = pygame.image.load(
             "fonction_render/house/Security_00001.png").convert_alpha()
         self.tileImage = pygame.transform.rotozoom(
@@ -248,7 +257,7 @@ class Prefecture(Building):
 class Water_well(Building):  # puit
     def __init__(self, pos):
         super().__init__(pos)
-
+        ipc(pos, 'Water_well')
         self.tileImage = pygame.image.load(
             "fonction_render/house/Utilitya_00001.png")
         self.tileImage = pygame.transform.rotozoom(
@@ -268,6 +277,7 @@ class Water_well(Building):  # puit
 
 class Senat(Building):
     def __init__(self, pos):
+        ipc(pos, 'Senat')
         super.__init__(self, pos)
         self.name = 'Senat'
         self.statut = {"Senat": 1, "S_feu": 0, "S_collapse": 0}
@@ -296,6 +306,7 @@ class Senat(Building):
 
 class B_Engineering(Building):
     def __init__(self, pos):
+        ipc(pos, 'B_Engineering')
         super().__init__(pos)
 
         self.tileImage = pygame.image.load(
@@ -314,6 +325,7 @@ class B_Engineering(Building):
 
 class Temples(Building):
     def __init__(self, pos):
+        ipc(pos, 'Temples')
         super.__init__(self, pos)
         self.name = 'Temples'
         self.nb_temples = 0
@@ -326,6 +338,7 @@ class Temples(Building):
 
 class Ceres(Temples):
     def __init__(self, pos):
+        ipc(pos, 'Ceres')
         super.__init__(self, pos)
         self.religion = 'Ceres'
 
@@ -335,6 +348,7 @@ class Ceres(Temples):
 
 class Mars(Temples):
     def __init__(self, pos):
+        ipc(pos, 'Mars')
         super.__init__(self, pos)
         self.religion = 'Mars'
 
@@ -344,6 +358,7 @@ class Mars(Temples):
 
 class Mercury(Temples):
     def __init__(self, pos):
+        ipc(pos, 'Mercury')
         super.__init__(self, pos)
         self.religion = 'Mercury'
 
@@ -353,6 +368,7 @@ class Mercury(Temples):
 
 class Neptune (Temples):
     def __init__(self, pos):
+        ipc(pos, 'Neptune')
         super.__init__(self, pos)
         self.religion = 'Neptune'
 
@@ -362,6 +378,7 @@ class Neptune (Temples):
 
 class Venus(Temples):
     def __init__(self, pos):
+        ipc(pos, 'Venus')
         super.__init(self, pos)
         self.religon = 'Venus'
 
@@ -386,6 +403,7 @@ class Venus(Temples):
 
 class Grass(Building):
     def __init__(self, pos):
+        ipc(pos, 'grass')
         super().__init__(pos)
         self.name = "grass"
         self.imageoffset = 0
@@ -401,6 +419,7 @@ class Grass(Building):
 
 class Chemins(Building):
     def __init__(self, pos):
+        ipc(pos, 'road')
         super().__init__(pos)
         self.name = "road"
         self.imageoffset = 0
@@ -442,6 +461,7 @@ class Chemins(Building):
 
 class BigHousing(Building):
     def __init__(self, pos):
+        ipc(pos, 'bighouse')
         super().__init__(pos)
         self.name = "bighouse"
 
@@ -483,6 +503,7 @@ class BigHousing(Building):
 
 class Housing(Building):
     def __init__(self, pos):
+        ipc(pos, 'house')
         super().__init__(pos)
         self.name = "house"
         self.imageoffset = 0
@@ -498,6 +519,7 @@ class Housing(Building):
 
 class Rumble(Building):
     def __init__(self, pos):
+        ipc(pos, 'trash')
         super().__init__(pos)
         self.name = "trash"
         self.imageoffset = 0
