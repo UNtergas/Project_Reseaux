@@ -14,8 +14,8 @@
 
 # Multi player Inter face
 
-    Time variable
-    Processing action based on time
-    Conflict resolving
+    Time variable : Khang
+    Processing action based on time : Khang + Phong
+    Conflict resolving : Phong
 
 # Rapport
