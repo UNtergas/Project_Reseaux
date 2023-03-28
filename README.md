@@ -32,6 +32,13 @@ The good architecture for network system is often (if not always) layers archite
 - layer 1 (encoder and decoder): is used to make sure that the data will be formated in the right way to transfer among clients (layer 6 in OSI model)
 - layer 2 (Game): is the terminal application that clients use to interact with other (layer 7 in OSI model).
 
+
+## compile && run
+```
+chmod +400 lan/compile.sh
+./lan/compile.sh
+```
+
 ## TODO List
 
 # LAN Communication
