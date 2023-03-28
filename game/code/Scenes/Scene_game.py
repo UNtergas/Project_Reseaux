@@ -118,7 +118,7 @@ def SceneGameHandleEvents(self, event):
             self.world.overlay_mode = "water"
             self.hud_manager["main"].overlay.text = "water"
         elif event.unicode =='s':
-            self.game.save.print()
+            self.game.save.save()
     if event.type in [pygame.KEYUP, pygame.KEYDOWN]:
         if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_UP]:
             self.camera.keys[event.key] = not self.camera.keys[event.key]
