@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     int master_socket;
     
     // Initialize all other players
-    for (int i = 0; i<N; ++i) {
+    {
         clients[i] = NULL;
     }
     int max_sd, sd, activity, new_socket, addrlen;
