@@ -2,6 +2,8 @@
 
 The network project is dedicated for creating a multi-player game using LAN. The very final objectif of this project is to create an efficient, robust and easy-to-play game. We use the older Caesar III project written by Python as the main game. After that we use C as the programming language to build our network. And for the communicating between the game (written by Python) and the network module (written by C), we use message queue as the inter process communication technique.
 
+The network project is dedicated for creating a multi-player game using LAN. The very final objectif of this project is to create an efficient, robust and easy-to-play game. We use the older Caesar III project written by Python as the main game. After that we use C as the programming language to build our network. And for the communicating between the game (written by Python) and the network module (written by C), we use message queue as the inter process communication technique.
+
 <h2>Software architecture</h2>
 
 ```
