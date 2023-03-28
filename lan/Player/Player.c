@@ -1,6 +1,15 @@
 #include "Player.h"
 #include <string.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int isNA(Player player) {
+    if (player.ip_addr == NULL || player.name == NULL) {
+        return 1;
+    }
+    return 0;
+}
 
 Player initPlayer(char* ip_addr, char* name) {
     Player newPlayer = {NULL, NULL};
@@ -19,7 +28,6 @@ Player initPlayer(char* ip_addr, char* name) {
 }
 
 void copyPlayer(Player *dst, Player *src) {
-
     // Length of player ip string
     unsigned long ip_length = strlen(src->ip_addr);
     // Length of player name
@@ -34,12 +42,11 @@ void copyPlayer(Player *dst, Player *src) {
         dst->name = malloc(name_length+1);
     }
 
-    strcpy(dst->ip_addr, src->ip_addr);
+    strncpy(dst->ip_addr, src->ip_addr, ip_length);
     (dst->ip_addr)[ip_length] = '\0';
     
-    strcpy(dst->name, src->name);
+    strncpy(dst->name, src->name, name_length);
     (dst->name)[ip_length] = '\0';
-
     
 }
 
@@ -50,11 +57,4 @@ int cmpPlayer(Player *dst, Player *src) {
     return 0; // 0 indicates that dst and src are equal
 }
 
-void addPlayer(Room* room, Player* newPlayer) {
-    for (int i=0; i<room->maxPlayer; ++i) {
-        if (cmpPlayer(&room->players[i], &null_player) == 0) {
-            copyPlayer(&room->players[i], newPlayer);
-            return;
-        }
-    }
-}
+

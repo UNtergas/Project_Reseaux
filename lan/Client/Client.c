@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <strings.h>
-
+#include <ifaddrs.h>
 
 Client initClient(char *ip_addr, char *name, int socket_fd) {
     Player newPlayer = initPlayer(ip_addr, name);
@@ -17,45 +17,22 @@ Client initClient(char *ip_addr, char *name, int socket_fd) {
     return newClient;
 }
 
-Room createRoom(char* roomName, Player host) {
-    unsigned long nameLength = strlen(roomName) + 1;
-    Room newRoom;
-    newRoom.name = malloc(nameLength);
-    strncpy(newRoom.name, roomName, nameLength);
-    newRoom.name[nameLength] = '\0';
-    addPlayer(&newRoom, &host);
-    return newRoom;
+int send_msg(Client client ,char* data) {
+    unsigned long msg_length = strlen(data); // length of the message
+    if (send(client.socket_fd, data, msg_length, 0) < 0) {
+        fprintf(stderr, "Error sending data\n");
+        return -1;
+    }
+    return 0;
 }
 
-int joinRoom(Room *room, struct sockaddr_in *host_addr, char *name, char *player_ip) {
-    if (room == NULL) {
-        write(1, "Room is null\n", 13);
+int recv_msg(Client client, char* buffer) {
+    unsigned long bytes_received = recv(client.socket_fd, buffer, 1024-1, 0);
+    buffer[bytes_received] = '\0';
+    if (bytes_received == -1) {
+        fprintf(stderr, "Error receiving data\n");
         return -1;
     }
-
-    int ip_length = sizeof(room->players[0].ip_addr); // players[0] is the first player in the room aka host of room
-    char *ip_addr = malloc(ip_length+1);
-    strncpy(ip_addr, room->players[0].ip_addr, ip_length);
-    ip_addr[ip_length] = '\0';
-
-    // Create new socket
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_fd < 0) {
-        perror("Error creating new socket");
-        return -1;
-    }
-
-    // Connect 
-    write(1, "Waiting for connecting to the room...\n", 38);
-    if (connect(socket_fd, (struct sockaddr *)(&host_addr), sizeof(host_addr)) < 0) {
-        perror("Error connecting to server");
-        return -1;
-    }
-    
-    // Add new player to the room
-    Player newPlayer = initPlayer(ip_addr, name);
-    addPlayer(room, &newPlayer);
-    
-    return socket_fd;
+    return 0;
 }
 

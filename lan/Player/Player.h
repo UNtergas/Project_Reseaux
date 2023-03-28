@@ -10,20 +10,13 @@ typedef struct {
     char* name;
 } Player;
 
-Player null_player = {NULL, NULL};
 
-typedef struct
-{
-    char* name; // name of room
-    int maxPlayer; // maximun number of players in room
-    Player *players; // array of all players in room
-} Room;
+
+int isNA(Player player);
 
 Player initPlayer(char* ip_addr, char* name);
 
 void copyPlayer(Player *dst, Player *src);
 int cmpPlayer(Player *dst, Player *src);
-
-void addPlayer(Room* room, Player* player);
 
 #endif
