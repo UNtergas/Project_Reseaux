@@ -13,6 +13,20 @@ def ipc(pos, type):
 def type_of_tile(grid, name):
     x, y = grid
     match name:
+        case "road":
+            return Chemins((x, y))
+        case "grass":
+            return Grass((x, y))
+        case "Tent":
+            return Tent((x, y))
+        case "Prefecture":
+            return Prefecture((x, y))
+        case "water_well":
+            return Water_well((x, y))
+        case "B_Engineering":
+            return B_Engineering((x, y))
+        case "trash":
+            return Rumble((x, y))
         case "house":
             return Housing((x, y))
         case "hammer":
@@ -42,7 +56,7 @@ class Building:
         self.name = None  # {Tent,Temples,Prefecture,Well-water..}
         self.size = 1
 
-        #self.risk_collapse = 0  # 0:pas de risk
+        # self.risk_collapse = 0  # 0:pas de risk
         self.risk_fire = 0
         self.canRemove = True
         self.canFire = False

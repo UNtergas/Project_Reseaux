@@ -15,8 +15,8 @@ class Save():
             self.map.Building.append([])
             for y in range(MAP_SIZE[1]):
                 self.map.Building[x].append(Grass((x, y)))
-
         self.map.Building[20] = [Chemins((20, x))for x in range(40)]
+        self.load()
         self.spawnpoint = (20, 0)
         self.walkers = Walkers()
         self.pop = 0
@@ -27,9 +27,26 @@ class Save():
         self.name = name
         self.size = 0
 
+    def load(self):
+        with open("saves/save.json", "r") as loadfile:
+            load = json.load(loadfile)
+        map = load["map"]
+        # walkers = load["walker"]
+        for x in range(MAP_SIZE[0]):
+            for y in range(MAP_SIZE[1]):
+                temp_build = map[x*MAP_SIZE[0] + y]
+                name = temp_build['name']
+                self.map.Building[x][y] = type_of_tile((x, y), name)
+                self.map.Building[x][y].risk = temp_build['risk']
+                if temp_build['time_under_effect'] != 0:
+                    self.map.Building[x][y].onFire = True
+                self.map.Building[x][y].time_under_effect = temp_build['time_under_effect']
+
     def print(self):
         map = []
-        walker = []
+        citizen = []
+        prefect = []
+        imigrant = []
         for x in range(MAP_SIZE[0]):
             for y in range(MAP_SIZE[1]):
                 name = self.map.Building[x][y].name
@@ -43,17 +60,26 @@ class Save():
                     }
                 )
 
-        if self.walkers.listWalker['Prefect'] is not None:
-            for prefect in self.walkers.listWalker['Prefect']:
-                pos = prefect.pos
-                walker.append(
+        if self.walkers.listWalker is not None:
+            for ctz in self.walkers.listWalker['Citizen']:
+                citizen.append(ctz.path)
+            for pft in self.walkers.listWalker['Prefect']:
+                prefect.append(
                     {
-                        'pos': pos
+                        'pos': pft.pos,
+                        'path': pft.path,
+                        'goal': pft.goal,
+                        'missionaire': pft.missionaire.grid,
+                        'headquarter': pft.headquarter.grid
                     }
                 )
+            for img in self.walkers.listWalker['Immigrant']:
+                print(img.__dict__)
         save = {
+            "name": self.name,
             "map": map,
-            "walker": walker
+            "walker": prefect,
+            "PO": self.PO
         }
         with open("saves/save.json", "w") as savefile:
             json.dump(save, savefile)

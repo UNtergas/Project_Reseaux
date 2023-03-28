@@ -18,6 +18,9 @@ class Minimap:
         self.x_y_ratio = self.real_x_y_ratio/self.mini_x_y_ratio
         self.array = []
         #
+        self.building = ["water_well", "B_Engineering", "house", "Prefecture"]
+
+        #
         self.mattrice = mattrice
         self.mini_map = self.creation_surface()
         self.mini_rect = pygame.Rect(
@@ -26,8 +29,6 @@ class Minimap:
         self.mini_camera_rect = None
         self.mini_scroll_x = 0
         self.mini_scroll_y = 0
-        #
-        self.building = ["water_well", "B_Engineering", "house", "Prefecture"]
 
     def creation_surface(self):
         mini_map = pygame.Surface((self.real_width, self.real_height))

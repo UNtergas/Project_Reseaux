@@ -59,7 +59,8 @@ class World:
                     # NOTION_ADD_SOMETHING_HERE
                     # mapRender.blit(building.tileImage[road_shifting_util(building)],
                     #                (building.map[0], building.map[1]))
-
+                if building.name in ["trash", "house", "Tent", "Prefecture", "water_well", "B_Engineering"]:
+                    self.world.listBuilding.append(building)
         render = {"map": mapRender, "grid": gridRender}
         return render
 
