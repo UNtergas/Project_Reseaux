@@ -28,7 +28,8 @@ Client **clients = NULL;
 int main(int argc, char **argv)
 {
     // Handle process
-    if (argc != 4) {
+    if (argc != 4)
+    {
         write(1, "Number of arguments is not confortable\n", 39);
         exit(1);
     }
@@ -40,16 +41,17 @@ int main(int argc, char **argv)
     int PORT = atoi(argv[2]);
 
     // check if the port is possible
-    if (!PORT) {
+    if (!PORT)
+    {
         write(1, "Invalid port!\n", 14);
         exit(1);
     }
 
     int opt = 1;
     // The main socket of this client
-    clients = (Client**)malloc(N*sizeof(Client*));
+    clients = (Client **)malloc(N * sizeof(Client *));
     int master_socket;
-    
+
     // Initialize all other players
     {
         clients[i] = NULL;
@@ -93,53 +95,61 @@ int main(int argc, char **argv)
 
         // Add the master socket to socket set
         FD_SET(master_socket, &readfds);
-        
+
         max_sd = master_socket;
 
         // Add all valid socket to socket set
-        for (int i=0; i<N; ++i) {
+        for (int i = 0; i < N; ++i)
+        {
             sd = clients[i]->socket_fd;
-            if (sd > 0) FD_SET(sd, &readfds);
-            if (sd > max_sd) max_sd = sd;
+            if (sd > 0)
+                FD_SET(sd, &readfds);
+            if (sd > max_sd)
+                max_sd = sd;
         }
 
         activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
         if ((activity < 0) && (errno != EINTR))
             write(1, "Select error\n", 13);
 
-        
-        if (FD_ISSET(master_socket, &readfds)) {
+        if (FD_ISSET(master_socket, &readfds))
+        {
             // If something is gone in master socket => new client request to connect
-            if ((new_socket = accept(master_socket, (struct sockaddr *)(&address), (socklen_t*)&addrlen)) < 0) {
+            if ((new_socket = accept(master_socket, (struct sockaddr *)(&address), (socklen_t *)&addrlen)) < 0)
+            {
                 perror("Error connecting");
                 continue;
-            } else {
+            }
+            else
+            {
                 Client newClient;
-                
+
                 // +++ Get the IP of new connection +++ //
                 char *new_ip_addr = malloc(INET_ADDRSTRLEN);
                 inet_ntop(AF_INET, &(address.sin_addr), new_ip_addr, INET_ADDRSTRLEN);
-                
+
                 // +++ Get the username of new connection +++ //
                 // Read the destination message
                 memset(buffer, 0, BUFFLEN);
-                valread = recv(new_socket, buffer, BUFFLEN-1, 0);
+                valread = recv(new_socket, buffer, BUFFLEN - 1, 0);
                 buffer[valread - 2] = '\0';
                 char *new_name = NULL;
                 // Decode destination message
-                if (strncmp(buffer, "username: ", 10) == 0) {
-                    new_name = malloc(valread-10);
-                    strncpy(new_name, buffer+10, valread-10);
+                if (strncmp(buffer, "username: ", 10) == 0)
+                {
+                    new_name = malloc(valread - 10);
+                    strncpy(new_name, buffer + 10, valread - 10);
                 }
-                
+
                 // +++ Initialize new client +++ //
                 newClient = initClient(new_ip_addr, new_name, new_socket);
-                
+
                 // Greeting message for joining the room
                 write(1, "Successfully connected!\n", 24);
-                
+
                 // Add the new socket to our player list
-                for (int i=0; i<N; ++i) {
+                for (int i = 0; i < N; ++i)
+                {
                     if (clients[i] == NULL)
                     {
                         clients[i] = malloc(sizeof(Client));
@@ -147,12 +157,13 @@ int main(int argc, char **argv)
                         break;
                     }
                 }
-                
+
                 // Send the room information to the new player
             }
-        } else {
+        }
+        else
+        {
             // If something happens on another socket => player send new signal
         }
     }
 }
-
