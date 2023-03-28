@@ -4,7 +4,7 @@ import os
 import sysv_ipc
 import re
 import threading
-KEY = 190234
+KEY = 190001
 PY_TO_C = 2
 C_TO_PY = 3
 
@@ -28,6 +28,7 @@ class Posix_Op:
         temp_list[0] = temp_list[0].split('\n')[0]
         temp_list[0] = temp_list[0].rstrip('\0')
         temp_list[1] = self.message[1]
+        print("the received tuple", tuple(temp_list))
         return tuple(temp_list)
 
 
@@ -53,7 +54,7 @@ class Game:
         self.screen_height = screen_height
         self.screen = pygame.display.set_mode((screen_width, screen_height))
 
-    def run(self, Sysv, player, player2):
+    def run(self, Sysv, player):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -78,7 +79,7 @@ class Game:
             Sysv.recv_message()
             player2.rect_position[0] = Sysv.message[0]
             player2.rect_position[1] = Sysv.message[1]
-            print(player2.rect_position)
+        # print(player2.rect_position)
 
 
 pygame.init()
@@ -90,12 +91,13 @@ player1 = Player(game.screen_width, game.screen_height, (255, 255, 255))
 player2 = Player(game.screen_width, game.screen_height, (255, 0, 0))
 Sysv = Posix_Op()
 
-thread1 = threading.Thread(target=game.handle_input, args=(player2, Sysv))
-# thread2 = threading.Thread(target=game.run, args=(Sysv, player1, player2,))
-thread1.start()
+# thread1 = threading.Thread(target=game.handle_input, args=(player2, Sysv))
+game.run(Sysv, player1)
+# thread2 = threading.Thread(target=game.run, args=(Sysv, player1))
+# thread1.start()
 # thread2.start()
 
-thread1.join()
+# thread1.join()
 # thread2.join()
 # game.run(Sysv, player1, player2)
 
