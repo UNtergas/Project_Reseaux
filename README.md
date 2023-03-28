@@ -24,13 +24,24 @@ The network project is dedicated for creating a multi-player game using LAN. The
           -----------------------------------
 ```
 
+The good architecture for network system is often (if not always) layers architecture. In this project, we have decided to create a 3-layers architecture as above. So if a player need to send the package containing the game's information, the package will be encoded by `encoder` and then is delivred to `Network Interface` to be transported in the network. After that, the rest players of game will receive the package via their own `Network Interface` and will be decoded by `Decoder` before being used to update their own game state. So:
+
+- layer 0 (NI) is used to communicate between client at the level of network via TCP protocol (layer 4 in OSI model).
+- layer 1 (encoder and decoder): is used to make sure that the data will be formated in the right way to transfer among clients (layer 6 in OSI model)
+- layer 2 (Game): is the terminal application that clients use to interact with other (layer 7 in OSI model).
+
+## TODO List
+
 # LAN Communication
 
-    Connect
-    Send
-    Receive
+    Connect 🔴
+    Send packet 🔴
+    Receive  packet 🔴
 
 # IPC
+
+    date from game -> packet 🔴
+    packet -> game interface 🔴
 
 # Multi-player Ingame Interface
 
@@ -49,9 +60,3 @@ The network project is dedicated for creating a multi-player game using LAN. The
     Method
     Demo
     Soutenance
-
-The good architecture for network system is often (if not always) layers architecture. In this project, we have decided to create a 3-layers architecture as above. So if a player need to send the package containing the game's information, the package will be encoded by `encoder` and then is delivred to `Network Interface` to be transported in the network. After that, the rest players of game will receive the package via their own `Network Interface` and will be decoded by `Decoder` before being used to update their own game state. So:
-
-- layer 0 (NI) is used to communicate between client at the level of network via TCP protocol (layer 4 in OSI model).
-- layer 1 (encoder and decoder): is used to make sure that the data will be formated in the right way to transfer among clients (layer 6 in OSI model)
-- layer 2 (Game): is the terminal application that clients use to interact with other (layer 7 in OSI model).
