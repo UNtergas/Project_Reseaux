@@ -24,8 +24,7 @@ class World:
         self.available = ["shovel", "house",
                           "hammer", "water", "sword", "road"]
         self.road_list = []
-        self.road_system = [
-            [False] * self.grid_lx for _ in range(self.grid_ly)]
+        self.road_system = self.save.road_system
         # rendering
         self.render = self.creation_surface()
         # etc
@@ -61,6 +60,7 @@ class World:
                     #                (building.map[0], building.map[1]))
                 if building.name in ["trash", "house", "Tent", "Prefecture", "water_well", "B_Engineering"]:
                     self.world.listBuilding.append(building)
+                    self.road_system[building.grid_x][building.grid_y] = 'S' if building.name == "house" else 'X'
         render = {"map": mapRender, "grid": gridRender}
         return render
 

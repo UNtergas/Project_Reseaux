@@ -22,6 +22,8 @@ class Save():
         self.religions = {}
         self.name = name
         self.size = 0
+        self.road_system = [
+            [False] * MAP_SIZE[0] for _ in range(MAP_SIZE[1])]
 
     def init(self):
         for x in range(MAP_SIZE[0]):
@@ -45,19 +47,28 @@ class Save():
                 if temp_build['time_under_effect'] != 0:
                     self.map.Building[x][y].onFire = True
                 self.map.Building[x][y].time_under_effect = temp_build['time_under_effect']
-                if name == "Tent":
-                    citizen = Citizen((x, y))
-                    citizen.my_house = self.map.Building[x][y]
-                    self.walkers.listWalker["Citizen"].append(citizen)
-                    self.map.Building[x][y].habitant = citizen
+                match name:
+                    case "Tent":
+                        citizen = Citizen((x, y))
+                        citizen.my_house = self.map.Building[x][y]
+                        self.walkers.listWalker["Citizen"].append(citizen)
+                        self.map.Building[x][y].habitant = citizen
+                    case "Road":
+                        self.road_system[x][y] = True
+                    case "House":
+                        self.road_system[x][y] = 'X'
+                    case _:
+                        self.road_system[x][y] = 'S'
         for pft in Prefects:
             pos = pft['pos']
+            hqt = pft['headquarter']
             prefect = Prefect(pos)
             prefect.goal = pft['goal']
             if pft['missionaire'] != "":
                 prefect.missionaire = self.map.Building[pft['missionaire']
                                                         [0]][pft['missionaire'][1]]
-            prefect.headquarter = self.map.Building[pos[0]][pos[1]]
+            prefect.headquarter = self.map.Building[hqt[0]][hqt[1]]
+            self.map.Building[hqt[0]][hqt[1]].personnage = prefect
             self.walkers.listWalker["Prefect"].append(prefect)
         for img in Immigrants:
             pos = img['pos']
@@ -65,7 +76,9 @@ class Save():
             immigrant = Walker(pos)
             immigrant.goal = goal
             immigrant.my_house = self.map.Building[goal[0]][goal[1]]
-            immigrant.path = img['path']
+            self.map.Building[goal[0]][goal[1]].available = False
+            immigrant.path_finding(self.road_system)
+            immigrant.path_index = 0
             self.walkers.listWalker["Immigrant"].append(immigrant)
 
     def save(self):
@@ -95,14 +108,17 @@ class Save():
                         'headquarter': pft.headquarter.grid
                     }
                 )
+            i = 0
             for img in self.walkers.listWalker['Immigrant']:
                 immigrant.append(
                     {
+                        "id": i,
                         "pos": img.pos,
                         "path": img.path,
                         "goal": img.goal,
                     }
                 )
+                i += 1
         save = {
             "name": self.name,
             "map": map,
