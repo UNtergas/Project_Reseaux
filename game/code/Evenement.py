@@ -134,25 +134,23 @@ class Evenement:
     def employing_prefect(self, world, H_R):
         for building in world.listBuilding:
             if type(building) == Prefecture:
+                unemployed = [
+                    a for a in H_R.listWalker["Citizen"] if a.unemployed == True]
+                if len(unemployed) > 4:
+                    count = 0
+                    for _ in unemployed:
+                        if count >= 4:
+                            break
+                        _.unemployed = False
+                        _.company = building
+                        building.list_employer.append(_)
+                        count += 1
                 if building.personnage == None:
-                    unemployed = [
-                        a for a in H_R.listWalker["Citizen"] if a.unemployed == True]
-                    if len(unemployed) > 4:
-                        count = 0
-                        for _ in unemployed:
-                            if count >= 4:
-                                break
-                            _.unemployed = False
-                            _.company = building
-                            building.list_employer.append(_)
-                            count += 1
-
                     spawnpoint = building.close_to_road(world)
                     if not spawnpoint:
                         if building.personnage != None:
                             H_R.listWalker["Prefect"].remove(prefect)
                             building.personnage = None
-                        print("prefect too far from road")
                     else:
                         if len(building.list_employer) >= 4:
                             prefect = Prefect(spawnpoint)
