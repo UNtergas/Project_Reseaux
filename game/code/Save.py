@@ -38,29 +38,28 @@ class Save():
         map = load["map"]
         Prefects = load["Prefect"]
         Immigrants = load["Immigrant"]
-        for x in range(MAP_SIZE[0]):
-            for y in range(MAP_SIZE[1]):
-                print(map[20][0]['name'])
-                if map['pos'] == (x, y):
-                    temp_build = map[x][y]
-                    name = temp_build['name']
-                    self.map.Building[x][y] = type_of_tile((x, y), name)
-                    self.map.Building[x][y].risk = temp_build['risk']
-                    if temp_build['time_under_effect'] != 0:
-                        self.map.Building[x][y].onFire = True
-                    self.map.Building[x][y].time_under_effect = temp_build['time_under_effect']
-                    match name:
-                        case "Tent":
-                            citizen = Citizen((x, y))
-                            citizen.my_house = self.map.Building[x][y]
-                            self.walkers.listWalker["Citizen"].append(citizen)
-                            self.map.Building[x][y].habitant = citizen
-                        case "Road":
-                            self.road_system[x][y] = True
-                        case "House":
-                            self.road_system[x][y] = 'X'
-                        case _:
-                            self.road_system[x][y] = 'S'
+        for temp_build in map:
+            (x, y) = temp_build['pos']
+            name = temp_build['name']
+            self.map.Building[x][y] = type_of_tile((x, y), name)
+            self.map.Building[x][y].risk = temp_build['risk']
+            if temp_build['time_under_effect'] != 0:
+                self.map.Building[x][y].onFire = True
+                self.map.Building[x][y].time_under_effect = temp_build['time_under_effect']
+            match name:
+                case "Prefecture":
+                    pass
+                case "Tent":
+                    citizen = Citizen((x, y))
+                    citizen.my_house = self.map.Building[x][y]
+                    self.walkers.listWalker["Citizen"].append(citizen)
+                    self.map.Building[x][y].habitant = citizen
+                case "Road":
+                    self.road_system[x][y] = True
+                case "House":
+                    self.road_system[x][y] = 'X'
+                case _:
+                    self.road_system[x][y] = 'S'
         for pft in Prefects:
             pos = pft['pos']
             hqt = pft['headquarter']
@@ -103,20 +102,21 @@ class Save():
                     )
 
         if self.walkers.listWalker is not None:
+            i = 0
             for pft in self.walkers.listWalker['Prefect']:
                 prefect.append(
                     {
+                        "id": i,
                         'pos': pft.pos,
                         'goal': pft.goal,
                         'missionaire': "" if pft.missionaire is None else pft.missionaire.grid,
                         'headquarter': pft.headquarter.grid
                     }
                 )
-            i = 0
+
             for img in self.walkers.listWalker['Immigrant']:
                 immigrant.append(
                     {
-                        "id": i,
                         "pos": img.pos,
                         "goal": img.goal,
                     }
