@@ -195,7 +195,7 @@ class Evenement:
                     if not prefect.missionaire:
                         prefect.missionaire = onFire
                         prefect.returning = False
-                        prefect.goal = random.choice(surround)
+                        prefect.goal = surround[0]
                         prefect.path_finding(road_system)
                         prefect.path_index = 0
         for prefect in H_R.listWalker["Prefect"]:
