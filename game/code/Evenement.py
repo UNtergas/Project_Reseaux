@@ -153,6 +153,7 @@ class Evenement:
                             building.personnage = None
                     else:
                         if len(building.list_employer) >= 4:
+
                             prefect = Prefect(spawnpoint)
                             prefect.headquarter = building
                             prefect.returning = False

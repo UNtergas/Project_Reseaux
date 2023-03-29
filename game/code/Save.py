@@ -42,10 +42,6 @@ class Save():
             (x, y) = temp_build['pos']
             name = temp_build['name']
             self.map.Building[x][y] = type_of_tile((x, y), name)
-            self.map.Building[x][y].risk = temp_build['risk']
-            if temp_build['time_under_effect'] != 0:
-                self.map.Building[x][y].onFire = True
-                self.map.Building[x][y].time_under_effect = temp_build['time_under_effect']
             match name:
                 case "Prefecture":
                     pass
@@ -54,6 +50,10 @@ class Save():
                     citizen.my_house = self.map.Building[x][y]
                     self.walkers.listWalker["Citizen"].append(citizen)
                     self.map.Building[x][y].habitant = citizen
+                    self.map.Building[x][y].risk_fire = temp_build['risk']
+                    if temp_build['time_under_effect'] != 0:
+                        self.map.Building[x][y].onFire = True
+                        self.map.Building[x][y].time_under_effect = temp_build['time']
                 case "Road":
                     self.road_system[x][y] = True
                 case "House":
@@ -90,23 +90,29 @@ class Save():
             for y in range(MAP_SIZE[1]):
                 name = self.map.Building[x][y].name
                 if name != "grass":
-                    risk_fire = self.map.Building[x][y].risk_fire
-                    time_under_effect = self.map.Building[x][y].time_under_effect
-                    map.append(
-                        {
-                            'pos': [x, y],
-                            'name': name,
-                            "risk": risk_fire,
-                            "time_under_effect": time_under_effect
-                        }
-                    )
+                    if name == "road":
+                        map.append(
+                            {
+                                'pos': [x, y],
+                                'name': 'road'
+                            }
+                        )
+                    else:
+                        risk_fire = self.map.Building[x][y].risk_fire
+                        time_under_effect = self.map.Building[x][y].time_under_effect
+                        map.append(
+                            {
+                                'pos': [x, y],
+                                'name': name,
+                                "risk": risk_fire,
+                                "time": time_under_effect
+                            }
+                        )
 
         if self.walkers.listWalker is not None:
-            i = 0
             for pft in self.walkers.listWalker['Prefect']:
                 prefect.append(
                     {
-                        "id": i,
                         'pos': pft.pos,
                         'goal': pft.goal,
                         'missionaire': "" if pft.missionaire is None else pft.missionaire.grid,
