@@ -65,6 +65,7 @@ def SceneGameRun(self):
 
     self.camera.movement_arrow()
     self.hud_manager["main"].update(self.mouse_pos, self.mouse_action)
+    # self.update_from_LAN(action,time)
     self.world.update(self.drag_start, self.drag_end,
                       self.mouse_pos, self.mouse_action, self.camera, self.mini_map, self.H_R)
     # self.evenement.game_speed = self.hud_manager["time"].update(
@@ -117,7 +118,7 @@ def SceneGameHandleEvents(self, event):
         elif event.unicode == 'w':
             self.world.overlay_mode = "water"
             self.hud_manager["main"].overlay.text = "water"
-        elif event.unicode =='s':
+        elif event.unicode == 's':
             self.game.save.save()
     if event.type in [pygame.KEYUP, pygame.KEYDOWN]:
         if event.key in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_UP]:

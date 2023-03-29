@@ -46,6 +46,7 @@ class Time_Wizard:
     def update(self, time, mouse_pos, mouse_action):
         # print(f"speed:{time}")
         if self.decrease.IsHoverOn(mouse_pos):
+            pass
             if mouse_action[0]:
                 if self.ispause:
                     time = self.history
@@ -56,6 +57,7 @@ class Time_Wizard:
                 else:
                     time -= 0.25
         elif self.increase.IsHoverOn(mouse_pos):
+            pass
             if mouse_action[0]:
                 if self.ispause:
                     time = self.history
@@ -65,6 +67,7 @@ class Time_Wizard:
                 else:
                     time += 0.25
         elif self.pause_button.IsHoverOn(mouse_pos):
+            pass
             if mouse_action[0]:
                 if self.ispause:
                     time = self.history
@@ -104,7 +107,7 @@ class Hudupper:
 class Hudbigleft:
     def __init__(self, width, height):
 
-        #button in interaction
+        # button in interaction
         self.interaction = None
         self.width = width
         self.height = height
@@ -125,7 +128,7 @@ class Hudbigleft:
             "bighouse": pg.image.load("ingamehud/window_interactive/bighouse.png").convert_alpha(), "hammer": pg.image.load("ingamehud/window_interactive/hammer.png").convert_alpha(), "sword": pg.image.load("ingamehud/window_interactive/sword.png").convert_alpha(),
             "wagon": pg.image.load("ingamehud/window_interactive/wagon.png").convert_alpha(), "X": pg.image.load("ingamehud/panelwindows_00013.png").convert_alpha(), "notice": pg.image.load("ingamehud/panelwindows_00013.png").convert_alpha(), "bell": pg.image.load("ingamehud/panelwindows_00013.png").convert_alpha()
         }
-        #hud in out
+        # hud in out
         self.button_098 = Button_img(
             self.width-20, 20+21, None, "ingamehud/paneling_00098.png",)
         # gap 77/ 2 long af button
