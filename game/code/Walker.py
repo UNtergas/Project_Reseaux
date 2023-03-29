@@ -1,5 +1,4 @@
 from Building import Chemins
-import random
 import pygame
 from const import *
 from Utils import A_star, polygon_center
@@ -77,9 +76,10 @@ class Walker():
         self.smooth(world)
 
     def getRandomValideDir(self, grid):
-        dirs = [dir for dir in [(0, -1), (1, 0), (0, 1), (-1, 0)]
-                if self.isNextPosValide(dir, grid)]
-        return random.choice(dirs if (len(dirs) > 0) else [(self.dir[0]*-1, self.dir[1]*-1)])
+        for dir in [(0, -1), (1, 0), (0, 1), (-1, 0)]:
+            if self.isNextPosValide(dir, grid):
+                return dir
+        return (self.dir[0]*-1, self.dir[1]*-1)
 
     def isNextPosValide(self, dir, grid):
         nextPos = (self.pos[0] + dir[0],
