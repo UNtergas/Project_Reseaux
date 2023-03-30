@@ -15,13 +15,14 @@
 
 #define BUF_SIZE 1024
 #define MAX 10
-#define MESG_KEY 190234
+#define MESG_KEY 190001
+
 #define PY_TO_C 2
 #define C_TO_PY 3
 #define False 0
 #define True 1
 
-#define PORT 8000
+#define PORT 9000
 // structure for message queue
 typedef struct mesg_buffer
 {
@@ -94,7 +95,7 @@ void setup_connection(int *my_fd, struct sockaddr_in *address)
 }
 void *send_to_peer()
 {
-    printf("start on thread send");
+    // printf("start on thread send");
     while (1)
     {
         // printf("\nstart read msg from python process\n");
@@ -119,22 +120,21 @@ void *send_to_peer()
             printf("\nconnection failed\n");
             exit(EXIT_FAILURE);
         }
-        printf("\nconnect sucessfully, start reading msg from python process\n");
+        printf("\nconnect sucessfully,\n");
         char *buffer = recv_from_python();
-
-        // sprintf(buffer__, "%s[PORT:%d] says: %s", name, PORT, buffer__);
-        if (send(sock, buffer, strlen(buffer) + 1, 0) == -1)
-        {
-            perror("sending failure");
-            exit(EXIT_FAILURE);
-        }
-        printf("\nmessage sent\n");
+        printf("received from python %s", buffer);
+        // if (send(sock, buffer, strlen(buffer) + 1, 0) == -1)
+        // {
+        //     perror("sending failure");
+        //     exit(EXIT_FAILURE);
+        // }
+        // printf("\nmessage sent\n");
         close(sock);
     }
 }
 void *receive_from_peer(int *server_fd)
 {
-    printf("start on thread recv");
+    // printf("start on thread recv");
     struct sockaddr_in address;
     int valread;
     char buffer[BUF_SIZE];
@@ -181,8 +181,7 @@ void *receive_from_peer(int *server_fd)
                     // char buffer__[1024];
                     // printf("\nenter the coor: ");
                     // scanf("%s", buffer__);
-                    printf("received from peer %s", buffer);
-                    // send_to_python(buffer);
+                    send_to_python(buffer);
                     FD_CLR(i, &current_sockets);
                 }
             }
@@ -204,16 +203,16 @@ int main()
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
     setup_connection(&server_fd, &address);
-    // printf("connection ok\n");
+    printf("connection ok\n");
     // Each thread has its identifier.
     pthread_t t1;
     pthread_t t2;
 
-    // pthread_create(&t1, NULL, send_to_peer, NULL);
-    pthread_create(&t2, NULL, (void *)receive_from_peer, (void *)&server_fd);
+    pthread_create(&t1, NULL, send_to_peer, NULL);
+    // pthread_create(&t2, NULL, (void *)receive_from_peer, (void *)&server_fd);
 
-    pthread_join(t2, NULL);
-    // pthread_join(t1, NULL);
+    // pthread_join(t2, NULL);
+    pthread_join(t1, NULL);
 
     return 0;
 }
