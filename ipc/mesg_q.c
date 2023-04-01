@@ -49,7 +49,7 @@ char *recv_from_python()
 
     return buffer;
 }
-void send_to_python(char *buffer)
+void sendToGame(char *buffer)
 {
     int msgid = msgget(MESG_KEY, 0666 | IPC_CREAT);
     message message;
@@ -182,7 +182,7 @@ void *receive_from_peer(int *server_fd)
                     // printf("\nenter the coor: ");
                     // scanf("%s", buffer__);
                     printf("received from peer %s", buffer);
-                    // send_to_python(buffer);
+                    // sendToGame(buffer);
                     FD_CLR(i, &current_sockets);
                 }
             }
