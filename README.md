@@ -78,3 +78,14 @@ Complete the following functions: 🔴
     Demo
     Soutenance
 ```
+
+# Task for each person
+```
+Yacine: Multi-player Scence (go to Application/code/Scenes/Scene_multi.py)
+Duke: IPC (go to Presentation/IO.py)
+Tuan: IPC (go to Presentation/IPC.py and IO.py)
+Khang: Session (go to Session/Room.c)
+Duy: Network 
+Phong: Multi-player logic (go to Application/multi)
+```
+
