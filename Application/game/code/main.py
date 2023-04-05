@@ -9,5 +9,6 @@ if __name__ == '__main__':
     g.addScene(Scene_newgame.SCENE)
     g.addScene(Scene_game.SCENE)
     g.addScene(Scene_load.SCENE)
+    #g.addScene(Scene_multi.SCENE)
 
     g.run()
