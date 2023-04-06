@@ -89,4 +89,3 @@ def SceneEventHandler(self,event):
 
 SCENE = Scene(SCENE_MULTI_ID, 'Scene_multi', createFunc=SceneMultiCreate,
               runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
-"""

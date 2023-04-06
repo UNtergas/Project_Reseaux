@@ -1,4 +1,3 @@
-
 import pygame as py
 from multiplayer import multi
 from Scene import *
@@ -64,35 +63,21 @@ from Scene import *
 
 def SceneRoomCreate(self):
     pass
-    text = font1.render("Room name: ")  # input
-    box['room'] = InputBox()
-    create = Button()  # event_type['CreateRoom']
-    exit = Button()  # switchScene(SCENE_MENU_ID)
-
-
-def JoinRooms(roomName: str, playerName: str):
-    pass
-    join(roomName, playerName)
-    # appeler fonction join
-
-
-def ShowRoom(self, playerName: str):
-    pass
-    rooms = []
-    rooms = getAvailableRoom()  # afficher les noms des rooms
+    # if (createroom(self.box['room'], playerName)) self.game.switchScene(SCENE_GAME_ID)
+    # # rappeller function createRoom(roomName, playerName)
+    # # avec success,  switch to game
 
 
 def SceneMultiRun(self):
     pass
-    # dessiner la  carte ici
+    # draw Scene ici
 
 
 def SceneEventHandler(self, event):
     pass
-    # if event.type == event_types["JoinRoom"]:
-    #     JoinRooms(roomName,playerName)
+    # if event.type == event_types["CreateRoom"]:
+    #     RoomCreate(self.playerName)
 
 
-SCENE = Scene(SCENE_MULTI_ID, 'Scene_multi', createFunc=SceneMultiCreate,
+SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multijoin', createFunc=SceneMultiCreate,
               runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
-"""

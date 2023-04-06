@@ -1,7 +1,7 @@
 import pygame as py
 from multiplayer import multi
 from Scene import *
-from const import font1, font_button,screen_height as SCREEN_HEIGHT, screen_width as SCREEN_WIDTH
+from const import font1, font_button, screen_height as SCREEN_HEIGHT, screen_width as SCREEN_WIDTH
 from Button import *
 from Inputbox import InputBox
 from Scenes.Scene_ids import *
@@ -75,39 +75,40 @@ SCENE = Scene(SCENE_MULTI_CREATE_ID, 'Scene_multicreate', createFunc=SceneMultiC
 """
 import pygame as py
 from multiplayer import multi
-from Scene import *
-from const import font1, font_button
-from Button import *
-from Inputbox import InputBox
 from Scene_ids import *
+from Scene import *
 
 
 def SceneRoomCreate(self):
     pass
-    # text = font1.render("Room name: ")  # input
-    # box['room'] = InputBox()
-    # create = Button()  # event_type['CreateRoom']
-    # exit = Button()  # switchScene(SCENE_MENU_ID)
+    text = font1.render("Room name: ")  # input
+    box['room'] = InputBox()
+    create = Button()  # event_type['CreateRoom']
+    exit = Button()  # switchScene(SCENE_MENU_ID)
 
 
-def RoomCreate(self, playerName: str):
+def JoinRooms(roomName: str, playerName: str):
     pass
-    # if (createroom(self.box['room'], playerName)) self.game.switchScene(SCENE_GAME_ID)
-    # # rappeller function createRoom(roomName, playerName)
-    # # avec success,  switch to game
+    join(roomName, playerName)
+    # appeler fonction join
+
+
+def ShowRoom(self, playerName: str):
+    pass
+    rooms = []
+    rooms = getAvailableRoom()  # afficher les noms des rooms
 
 
 def SceneMultiRun(self):
     pass
-    # draw Scene ici
+    # dessiner la  carte ici
 
 
 def SceneEventHandler(self, event):
     pass
-    # if event.type == event_types["CreateRoom"]:
-    #     RoomCreate(self.playerName)
+    # if event.type == event_types["JoinRoom"]:
+    #     JoinRooms(roomName,playerName)
 
 
-SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multijoin', createFunc=SceneMultiCreate,
+SCENE = Scene(SCENE_MULTI_ID, 'Scene_multi', createFunc=SceneMultiCreate,
               runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
-"""
