@@ -64,7 +64,7 @@ class World:
         render = {"map": mapRender, "grid": gridRender}
         return render
 
-    def update(self, drag_start, drag_end, mouse_pos, mouse_action, camera, mini_map, H_R):
+    def update(self, drag_start, drag_end, mouse_pos, mouse_action, camera, mini_map, H_R, function_queue):
         drag_process = mouse_action[0]
         self.on_mouse_temp = None
         if not mouse_action[0] and self.temp_tile != []:
@@ -72,11 +72,14 @@ class World:
             for temp in self.temp_tile:
                 if temp is not None:
                     if temp["type"] in self.buildable:
-                        self.construction(temp, mini_map)
+                        function_queue.enqueue(
+                            self.construction, None, temp, mini_map)
                     elif temp["type"] == "shovel":
-                        self.destruction(temp, mini_map, H_R)
+                        function_queue.enqueue(
+                            self.destruction, None, temp, mini_map, H_R)
                     elif temp["type"] == "road":
-                        self.cheminement(temp, mini_map)
+                        function_queue.enqueue(
+                            self.cheminement, None, temp, mini_map)
             self.hud["main"].interaction = None
         self.temp_tile = []
         if self.hud["main"].interaction != None:

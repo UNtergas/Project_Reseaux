@@ -1,7 +1,7 @@
 import os
 import pathlib
 import json
-
+from StackFunc import FunctionQueue
 from const import MAP_SIZE
 from Building import *
 from Walker import *
@@ -24,6 +24,8 @@ class Save():
         self.size = 0
         self.road_system = [
             [False] * MAP_SIZE[0] for _ in range(MAP_SIZE[1])]
+
+        self.function_queue = FunctionQueue()
 
     def init(self):
         for x in range(MAP_SIZE[0]):
@@ -140,3 +142,59 @@ class Save():
 
     def getSavesNames():
         return ["chicken", "moscow", "save"]
+
+    def getJsonInstance(self):
+        map = []
+        prefect = []
+        immigrant = []
+        for x in range(MAP_SIZE[0]):
+            for y in range(MAP_SIZE[1]):
+                name = self.map.Building[x][y].name
+                if name != "grass":
+                    if name == "road":
+                        map.append(
+                            {
+                                'pos': [x, y],
+                                'name': 'road'
+                            }
+                        )
+                    else:
+                        risk_fire = self.map.Building[x][y].risk_fire
+                        time_under_effect = self.map.Building[x][y].time_under_effect
+                        map.append(
+                            {
+                                'pos': [x, y],
+                                'name': name,
+                                "risk": risk_fire,
+                                "time": time_under_effect
+                            }
+                        )
+
+        if self.walkers.listWalker is not None:
+            for pft in self.walkers.listWalker['Prefect']:
+                prefect.append(
+                    {
+                        'pos': pft.pos,
+                        'goal': pft.goal,
+                        'missionaire': "" if pft.missionaire is None else pft.missionaire.grid,
+                        'headquarter': pft.headquarter.grid
+                    }
+                )
+
+            for img in self.walkers.listWalker['Immigrant']:
+                immigrant.append(
+                    {
+                        "pos": img.pos,
+                        "goal": img.goal,
+                    }
+                )
+                i += 1
+        save = {
+            "name": self.name,
+            "map": map,
+            "Prefect": prefect,
+            "Immigrant": immigrant,
+            "PO": self.PO
+        }
+
+        return json.dumps(save)

@@ -49,6 +49,25 @@ def SceneGameCreate(self):
 
 
 def SceneGameRun(self):
+    # print("Executing")
+    SceneGameRecvFromPeer(self)
+    SceneGameSentToPeer(self)
+    self.game.save.function_queue.execute()
+    SceneGameMainAction(self)
+    # pass
+
+
+def SceneGameSentToPeer(self):
+
+    pass
+
+
+def SceneGameRecvFromPeer(self):
+
+    pass
+
+
+def SceneGameMainAction(self):
 
     #
     self.clock.tick(60)
@@ -67,7 +86,7 @@ def SceneGameRun(self):
     self.hud_manager["main"].update(self.mouse_pos, self.mouse_action)
     # self.update_from_LAN(action,time)
     self.world.update(self.drag_start, self.drag_end,
-                      self.mouse_pos, self.mouse_action, self.camera, self.mini_map, self.H_R)
+                      self.mouse_pos, self.mouse_action, self.camera, self.mini_map, self.H_R, self.game.save.function_queue)
     # self.evenement.game_speed = self.hud_manager["time"].update(
     #     self.evenement.game_speed, self.mouse_pos, self.mouse_action)
     self.mini_map.update_mode_interactive(
