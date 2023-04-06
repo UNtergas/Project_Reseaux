@@ -1,0 +1,12 @@
+The reconstruct_path function is used to reconstruct the path once the goal node has been reached during the execution of the A* algorithm. The function takes as input the came_from dictionary and the goal node, and returns a list of nodes representing the shortest path from the start node to the goal node.
+
+The came_from dictionary is a mapping of each node to the node that precedes it on the path from the start node to the goal node. The key of the dictionary is the node, and the value is the node that precedes it on the path. The came_from dictionary is constructed during the execution of the A* algorithm and contains all the nodes that were visited during the search process.
+
+The reconstruct_path function uses the came_from dictionary to backtrack from the goal node to the start node by following the chain of predecessor nodes. It starts with the goal node and appends it to the path. Then it repeatedly looks up the predecessor of the current node in the came_from dictionary and appends it to the path. It continues this process until the start node is reached.
+
+Here's an example of how the reconstruct_path function could be implemented:
+
+
+In this example, the manhattan_distance function calculates the Manhattan distance between the current node and the goal node. The a_star function implements the A* algorithm using the Manhattan distance heuristic. The neighbors function returns the neighbors of a given node, and the movement_cost function returns the cost of moving from one node to another. The reconstruct_path function is used to reconstruct the path once the goal node has been reached.
+
+It is important to notice that this is just one way to implement the A* algorithm with the Manhattan distance heuristic, the implementation could vary depending on the design choices and specific requirements of the problem to be solved
