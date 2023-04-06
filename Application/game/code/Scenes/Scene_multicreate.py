@@ -1,10 +1,10 @@
 import pygame as py
 from multiplayer import multi
 from Scene import *
-from const import font1, font_button
+from const import font1, font_button,screen_height as SCREEN_HEIGHT, screen_width as SCREEN_WIDTH
 from Button import *
 from Inputbox import InputBox
-from Scene_ids import *
+from Scenes.Scene_ids import *
 
 # Define constants for button sizes
 BUTTON_WIDTH = 200

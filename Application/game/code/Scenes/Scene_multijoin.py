@@ -5,7 +5,7 @@ from Scene import *
 from const import font1, font_button
 from Button import *
 from Inputbox import InputBox
-from Scene_ids import *
+from Scenes.Scene_ids import *
 
 
 def SceneMultiCreate(self):
@@ -49,7 +49,7 @@ def SceneEventHandler(self, event):
         RoomCreate(self, self.playerName)
 
 
-SCENE_MULTI_CREATE = Scene(SCENE_MULTI_CREATE_ID, 'Scene_multicreate', createFunc=SceneMultiCreate,
+SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multicreate', createFunc=SceneMultiCreate,
                            runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
 
 

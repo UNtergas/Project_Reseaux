@@ -1,4 +1,4 @@
-from Presentation import IO
+from Presentation import GameIO as IO
 
 
 def getAvailableRoom():

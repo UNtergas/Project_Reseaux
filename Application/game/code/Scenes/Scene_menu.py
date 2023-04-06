@@ -2,7 +2,7 @@ from Scene import *
 import pygame
 from Button import *
 from const import *
-from .Scene_ids import SCENE_MENU_ID, SCENE_GAME_ID, SCENE_NEWGAME_ID, SCENE_LOADGAME_ID
+from .Scene_ids import *
 from Utils import GenerateGridLayout
 
 
@@ -35,8 +35,8 @@ def SceneMenuCreate(self):
         *next(layout), 300, 100, lambda: self.game.switchScene(SCENE_NEWGAME_ID), "Start Game", font1)
     self.buttons["button_load"] = Button_text(
         *next(layout), 300, 100, lambda: self.game.switchScene(SCENE_LOADGAME_ID), "Load a Game", font1)
-    self.buttons["button_options"] = Button_text(
-        *next(layout), 300, 100, lambda: print("ok"), "Options", font1)
+    self.buttons["button_multi"] = Button_text(
+        *next(layout), 300, 100, lambda: self.game.switchScene(SCENE_MULTI_ID), "Multi", font1)
     self.buttons["button_exit"] = Button_text(
         *next(layout), 300, 100, self.game.end, "Exit Game", font1)
 

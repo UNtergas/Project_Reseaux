@@ -4,11 +4,11 @@ from Scene import *
 from const import font1, font_button
 from Button import *
 from Inputbox import InputBox
-from Scene_ids import *
+from Scenes.Scene_ids import *
 
 
 def SceneMultiCreate(self):
-    self.playerName = multi.get_player_name()
+    self.playerName = None
     self.box = {}
     createRoom = Button(py.Rect(200, 350, 150, 50), "Create Room",
                         font_button, None, event_types["CreateRoom"])
@@ -52,16 +52,8 @@ def SceneEventHandler(self, event):
         RoomJoin(self, self.playerName)
 
 
-SCENE_MULTI_CREATE = Scene(SCENE_MULTI_CREATE_ID, 'Scene_multicreate', createFunc=SceneMultiCreate,
-                           runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
-
-SCENE_MULTI_JOIN = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multijoin', createFunc=SceneMultiJoin,
-                         runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
-
-SCENE_MULTI = Scene(SCENE_MULTI_ID, 'Scene_multi',
-                    createFunc=None, runFunc=None, handleEventsFunc=None)
-SCENE_MULTI.add_child(SCENE_MULTI_CREATE)
-SCENE_MULTI.add_child(SCENE_MULTI_JOIN)
+SCENE = Scene(SCENE_MULTI_ID, 'Scene_multi',
+              createFunc=SceneMultiCreate, runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
 
 
 """
