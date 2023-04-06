@@ -40,20 +40,29 @@ chmod +400 lan/compile.sh
 ```
 
 ## TODO List
-
+```
+Complete the following functions: 🔴
 # LAN Communication
-
-    Connect 🔴
-    Send packet 🔴
-    Receive  packet 🔴
+    createRoom ✅
+    destroyRoom 🔴
+    discoverRoom 🔴
+    joinRoom 🔴
+    sendRoomIn4 🔴
+    connectToRoomNetwork 🔴
+    sendGameStateToNewPlayer 🔴
 
 # IPC
-
-    date from game -> packet 🔴
-    packet -> game interface 🔴
+    # Class ICP
+    sendToNetwork 🔴
+    receiveFromNetwork 🔴
+    # Clas IO
+    execute 🔴
+    _actionToStr 🔴
+    _strToAction 🔴
+    sendActions 🔴
+    receiveAction 🔴
 
 # Multi-player Ingame Interface
-
     Time variable : 🔴
     save needed data into save.json : ✅
     load json to game inter face :🔜
@@ -64,8 +73,19 @@ chmod +400 lan/compile.sh
     Conflict resolving : 🔴
 
 # Rapport
-
     Intro
     Method
     Demo
     Soutenance
+```
+
+# Task for each person
+```
+Yacine: Multi-player Scence (go to Application/code/Scenes/Scene_multi.py)
+Duke: IPC (go to Presentation/IO.py)
+Tuan: IPC (go to Presentation/IPC.py and IO.py)
+Khang: Session (go to Session/Room.c)
+Duy: Network 
+Phong: Multi-player logic (go to Application/multi)
+```
+
