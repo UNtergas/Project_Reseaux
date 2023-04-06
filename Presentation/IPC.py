@@ -18,6 +18,10 @@ class IPC:
         pass
 
     # The function @receiveFromNetwork is used to receive a message from the network process
-    def receiveFromNetwork(self):
+    def receiveFromNetwork(self,IO):
         # +++ YOUR CODE HERE +++ #
+        #IO.inputStack.append(str)
+        pass
+
+    def processMessage(self):
         pass
