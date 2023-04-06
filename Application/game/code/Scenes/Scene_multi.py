@@ -26,7 +26,7 @@ def RoomCreate(self, playerName: str):
 
 
 def SceneMultiJoin(self):
-    self.playerName = multi.get_player_name()
+    # self.playerName = BOXES["playerName"].getText()
     self.box = {}
     joinRoom = Button(py.Rect(200, 350, 150, 50), "Join Room",
                       font_button, None, event_types["JoinRoom"])
