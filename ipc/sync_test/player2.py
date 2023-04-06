@@ -8,7 +8,6 @@ A_TO_B = 1
 B_TO_A = 2
 IDENTIFIER = 'test_prog.txt'
 KEY = 199999
-KEY_GEN = 69
 NAME = 'B'
 
 
