@@ -1,0 +1,127 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/msg.h>
+#include <string.h>
+#include <pthread.h>
+
+#define MAX_MSG_LEN 1024
+#define MSG_TYPE 1
+
+struct msg_buffer
+{
+    long mtype;
+    char mtext[MAX_MSG_LEN];
+};
+
+void *send_msg(void *arg);
+void *recv_msg(void *arg);
+
+int main()
+{
+    int msgid;
+    struct msg_buffer msg;
+    key_t key;
+
+    // Créer la clé pour la file de message
+    key = ftok("msgfile", 65);
+
+    // Créer la file de message
+    msgid = msgget(key, 0666 | IPC_CREAT);
+    if (msgid == -1)
+    {
+        perror("Erreur lors de la création de la file de message");
+        exit(EXIT_FAILURE);
+    }
+
+    // Identifiant du destinataire
+    int dest_pid = 1234;
+
+    // Initialiser les arguments des threads
+    struct
+    {
+        int msgid;
+        int dest_pid;
+    } args = {msgid, dest_pid};
+
+    // Créer les threads d'envoi et de réception
+    pthread_t send_thread, recv_thread;
+    pthread_create(&send_thread, NULL, send_msg, &args);
+    pthread_create(&recv_thread, NULL, recv_msg, &args);
+
+    // Attendre la fin des threads
+    pthread_join(send_thread, NULL);
+    pthread_join(recv_thread, NULL);
+
+    // Supprimer la file de message
+    if (msgctl(msgid, IPC_RMID, NULL) == -1)
+    {
+        perror("Erreur lors de la suppression de la file de message");
+        exit(EXIT_FAILURE);
+    }
+
+    return 0;
+}
+
+void *send_msg(void *arg)
+{
+    struct
+    {
+        int msgid;
+        int dest_pid;
+    } *args = arg;
+
+    printf("Thread d'envoi\n");
+
+    // Construire le message à envoyer
+    struct msg_buffer msg;
+    msg.mtype = args->dest_pid;
+    strcpy(msg.mtext, "Bonjour, je suis le thread d'envoi");
+
+    // Envoyer le message
+    if (msgsnd(args->msgid, &msg, sizeof(msg), 0) == -1)
+    {
+        perror("Erreur lors de l'envoi du message");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Message envoyé : %s\n", msg.mtext);
+
+    return NULL;
+}
+
+void *recv_msg(void *arg)
+{
+    struct
+    {
+        int msgid;
+        int dest_pid;
+    } *args = arg;
+
+    printf("Thread de réception\n");
+
+    // Recevoir les messages jusqu'à ce que le message "exit" soit reçu
+    while (1)
+    {
+        struct msg_buffer msg;
+
+        // Recevoir un message de la file de message
+        if (msgrcv(args->msgid, &msg, sizeof(msg), args->dest_pid, 0) == -1)
+        {
+            perror("Erreur lors de la réception du message");
+            exit(EXIT_FAILURE);
+        }
+
+        printf("Message reçu : %s\n", msg.mtext);
+
+        // Si le message est "exit", arrêter le thread de réception
+        if (strcmp(msg.mtext, "exit") == 0)
+        {
+            break;
+        }
+    }
+
+    printf("Thread de réception terminé\n");
+
+    return NULL;
+}
