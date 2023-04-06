@@ -1,0 +1,11 @@
+**/__pycache__/
+**/.vscode/
+**/saves/
+**/assets/
+
+ipc/
+ipc_old/
+helpers/
+
+.env
+.DS_Store
