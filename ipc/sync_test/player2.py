@@ -20,11 +20,20 @@ class Sysv:
         self.mesg = None
 
     def send_message(self, message):
-        self.message_queue.send(message.encode('utf-8'), type=B_TO_A)
+        try:
+            self.message_queue.send(message.encode(
+                'utf-8'), block=False, type=B_TO_A)
+        except sysv_ipc.BusyError:
+            pass
 
     def recv_message(self):
-        self.mesg = self.message_queue.receive(type=A_TO_B)
-        self.mesg = self.decode_format()
+
+        try:
+            self.mesg, type = self.message_queue.receive(
+                block=False, type=A_TO_B)
+            self.mesg = self.decode_format()
+        except sysv_ipc.BusyError:
+            return False
 
     def decode_format(self):
         temp = self.mesg.decode('utf-8')
@@ -37,9 +46,12 @@ class Game:
         self.func_queue = FunctionQueue()
 
     def RECV_SYS(self, Sysv, player):
-        Sysv.recv_message()
-        player.rect_position[0] = Sysv.mesg['x']
-        player.rect_position[1] = Sysv.mesg['y']
+
+        if (Sysv.recv_message() != False):
+            player.rect_position[0] = float(Sysv.mesg['x'])
+            player.rect_position[1] = float(Sysv.mesg['y'])
+        else:
+            pass
 
     def event(self, player, Sysv):
         for event in pygame.event.get():
@@ -66,11 +78,12 @@ class Game:
 
     def render(self, player):
         self.screen.fill((0, 0, 0))
+        # print(player.rect_position[0], player.rect_position[1])
         player.phuoc_ve(self.screen)
 
     def run(self, player, Sysv):
         self.func_queue.enqueue(self.RECV_SYS(Sysv, player))
-        self.event(player)
+        self.event(player, Sysv)
         self.func_queue.execute()
         self.render(player)
         pygame.display.flip()

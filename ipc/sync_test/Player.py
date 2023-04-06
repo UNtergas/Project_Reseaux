@@ -18,6 +18,7 @@ class Player:
         pygame.draw.rect(screen, self.rect_color, rect)
 
     def phuoc_ve(self, screen):
+        # print(self.rect_position[0], self.rect_position[1])
         screen.blit(self.image, (self.rect_position[0], self.rect_position[1]))
 
     def movement(self, dir):
