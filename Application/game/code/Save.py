@@ -127,7 +127,6 @@ class Save():
                         "goal": img.goal,
                     }
                 )
-                i += 1
         save = {
             "name": self.name,
             "map": map,
