@@ -42,6 +42,7 @@ struct argv {
 
 void *bindNewDiscoveringThread(void *arg) {
     // The socket used for host of a room to listen if someone need to discover room
+    char *roomName = (char *)arg;
     int hostSocket = socket(AF_INET, SOCK_DGRAM, 0);
     struct sockaddr_in hostAddr;
     memset(&hostAddr, 0, sizeof(hostAddr));
@@ -67,8 +68,10 @@ void *bindNewDiscoveringThread(void *arg) {
         close(fd);
     }
     if (strncmp(buffer, "?DiscoverRoom", 13) == 0) {
+        char *message = malloc(64);
+        sprintf(message, "!Active %s", roomName);
         hostAddr.sin_port = htons(54321);
-        sendto(hostSocket, "!Active", strlen("!Active"), 0, (struct sockaddr *)&hostAddr, (socklen_t)host_len);
+        sendto(hostSocket, message, strlen(message), 0, (struct sockaddr *)&hostAddr, (socklen_t)host_len);
     }
     return NULL;
 }
@@ -291,7 +294,7 @@ int main(int argc, char **argv) {
     if (mode == 1) {
         // mode = 1 => create new room
         pthread_t roomDiscoverTid, mainTid;
-        pthread_create(&roomDiscoverTid, NULL, bindNewDiscoveringThread, NULL);
+        pthread_create(&roomDiscoverTid, NULL, bindNewDiscoveringThread, argv[2]);
         pthread_create(&mainTid, NULL, mainThread, &myarg);
         
         pthread_join(roomDiscoverTid, NULL);
@@ -369,8 +372,8 @@ int main(int argc, char **argv) {
 
         char **hostIPs = NULL;
         char **roomNames = NULL;
-        discorverRoom(&hostIPs, &roomNames);
-        fputs(hostIPs[0], stdout);
+//        discorverRoom(&hostIPs, &roomNames);
+//        fputs(hostIPs[0], stdout);
 //        int sock = socket(AF_INET, SOCK_DGRAM, 0);
 //        struct sockaddr_in servaddr;
 //        memset(&servaddr, 0, sizeof(servaddr));
