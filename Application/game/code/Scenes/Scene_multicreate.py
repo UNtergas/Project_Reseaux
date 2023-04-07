@@ -1,73 +1,61 @@
-import pygame as py
-from multiplayer import multi
 from Scene import *
-from const import font1, font_button, screen_height as SCREEN_HEIGHT, screen_width as SCREEN_WIDTH
+import pygame
 from Button import *
 from Inputbox import InputBox
-from Scenes.Scene_ids import *
-
-# Define constants for button sizes
-BUTTON_WIDTH = 200
-BUTTON_HEIGHT = 50
-BUTTON_SPACING = 20
-BUTTON_X = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
-BUTTON_Y = (SCREEN_HEIGHT - BUTTON_HEIGHT) // 2
-
-# Define a constant for the input box size
-INPUT_WIDTH = 300
-INPUT_HEIGHT = 50
-INPUT_SPACING = 10
-INPUT_X = (SCREEN_WIDTH - INPUT_WIDTH) // 2
-INPUT_Y = 150
-
-# Define a dictionary to store input boxes
-BOXES = {}
+from Save import *
+from const import *
+from .Scene_ids import *
 
 
 def SceneMultiCreate(self):
-    # Create an input box for the room name
-    BOXES["room"] = InputBox(
-        INPUT_X, INPUT_Y, INPUT_WIDTH, INPUT_HEIGHT, "Room Name", font1)
+    self.images["fond"] = pygame.image.load(
+        "assets/01b_00001.png").convert()
 
-    # Create a button to create the room
+    self.box["inputbox"] = InputBox(
+        self.game.screen_width/2, self.game.screen_height/2-30, 600, 45, lambda: pygame.event.post(pygame.event.Event(
+            event_types["LaunchGame"], {"name": 1})), font2)
 
-    self.buttons = {}
-    self.buttons['create'] = Button_text(BUTTON_X, INPUT_Y + INPUT_HEIGHT + INPUT_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT,
-                                         lambda: create_room(self), "Create Room", font_button)
-
-    # Create a button to go back to the main menu
-    self.buttons['back_button'] = Button_text(BUTTON_X, BUTTON_Y + BUTTON_HEIGHT + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT,
-                                              lambda: self.switch_scene(SCENE_MENU_ID), "Back", font_button)
-
-
-def create_room(self):
-    # Get the room name from the input box
-    room_name = BOXES["room"].getText()
-
-    # Check that the room name is not empty
-    if room_name != "":
-        # Create the room
-        if multi.create_room(room_name, self.playerName):
-            # If successful, switch to the game scene
-            self.game.switchScene(SCENE_GAME_ID)
+    self.buttons['button_menu'] = Button_text(self.game.screen_width/2-150, self.game.screen_height /
+                                              2+50, 300, 100, lambda: self.game.switchScene(SCENE_MENU_ID), "Back to Menu")
+    self.buttons['create_button'] = Button_text(self.game.screen_width/2+150, self.game.screen_height /
+                                                2+50, 300, 100, lambda: pygame.event.post(pygame.event.Event(
+                                                    event_types["LaunchGame"], {"name": 1})), "Create your room")
 
 
-def SceneMultiRun(self):
-    # Draw the input box
-    BOXES["room"].draw(self.game.screen)
+def SceneMultiCreateRun(self):
 
-    # Draw the buttons
-    self.drawButtons()
+    pygame.time.Clock().tick(60)
+
+    self.game.screen.blit(pygame.transform.scale(
+        self.images["fond"], (self.game.screen_width, self.game.screen_height)), (0, 0))
+
+    pygame.draw.rect(self.game.screen, (180, 180, 180),
+                     (self.game.screen_width/2-300, self.game.screen_height/2-100, 600, 175))
+
+    for key in self.box.keys():
+        self.box[key].show(self.game.screen)
+
+    for key in self.buttons.keys():
+        self.buttons[key].show(self.game.screen, False)
+
+    text = font1.render("Enter the name of your room", 1, (0, 0, 0))
+    self.game.screen.blit(text, (self.game.screen_width /
+                          2-text.get_width()/2, self.game.screen_height/2-100))
+
+    pygame.display.flip()
 
 
 def SceneEventHandler(self, event):
-    # Handle events for the input box
-    BOXES["room"].handle_event(event)
+    if event.type == event_types["LaunchGame"]:
+        print(event)
+        self.game.save = Save(self.box["inputbox"].text)
+        self.game.switchScene(SCENE_GAME_ID)
+        self.box['inputbox'].text = ""
 
 
 # Create the scene object
 SCENE = Scene(SCENE_MULTI_CREATE_ID, 'Scene_multicreate', createFunc=SceneMultiCreate,
-              runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
+              runFunc=SceneMultiCreateRun, handleEventsFunc=SceneEventHandler)
 
 
 """
@@ -97,7 +85,7 @@ def ShowRoom(self, playerName: str):
     rooms = getAvailableRoom()  # afficher les noms des rooms
 
 
-def SceneMultiRun(self):
+def SceneMultiCreateRun(self):
     pass
     # dessiner la  carte ici
 
@@ -109,5 +97,5 @@ def SceneEventHandler(self, event):
 
 
 SCENE = Scene(SCENE_MULTI_ID, 'Scene_multi', createFunc=SceneMultiCreate,
-              runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
+              runFunc=SceneMultiCreateRun, handleEventsFunc=SceneEventHandler)
 """
