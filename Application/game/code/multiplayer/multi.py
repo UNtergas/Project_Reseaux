@@ -1,6 +1,54 @@
 import subprocess
 from Presentation import GameIO as IO
 
+<<<<<<< yacine
+
+def getAvailableRoom():
+    print('getAvailableRoom')
+    pass
+    rooms = []
+    response = IO.sendReceiveData("GET_ROOMS", None)
+
+    if response["status"] == "SUCCESS":
+        rooms = response["data"]
+
+    return rooms
+
+
+def createRoom(roomName: str, playerName: str):
+    print('createRoom')
+    pass
+    response = IO.sendReceiveData("CREATE_ROOM", (roomName, playerName))
+    if response["status"] == "SUCCESS":
+        return True
+    else:
+        return False
+
+
+def join(roomName: str, playerName: str):
+    print('Join')
+    pass
+    response = IO.sendReceiveData("JOIN_ROOM", (roomName, playerName))
+    if response["status"] == "SUCCESS":
+        return True
+    else:
+        return False
+
+
+def getPlayers():
+    print("getPlayers")
+    pass
+    response = IO.sendReceiveData("GET_PLAYERS", None)
+
+    if response["status"] == "SUCCESS":
+        return response["data"]
+
+    return None
+
+
+"""
+=======
+>>>>>>> main
 # The function @getAvailableRoom is used to get the available rooms from network module
 # @parameters: {
 #   None
@@ -37,4 +85,9 @@ def join(roomName: str, playerName: str):
 
 
 def getPlayers():
+<<<<<<< yacine
     pass
+"""
+=======
+    pass
+>>>>>>> main
