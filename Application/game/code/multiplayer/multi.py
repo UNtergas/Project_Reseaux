@@ -2,6 +2,8 @@ from Presentation import GameIO as IO
 
 
 def getAvailableRoom():
+    print('getAvailableRoom')
+    pass
     rooms = []
     response = IO.sendReceiveData("GET_ROOMS", None)
 
@@ -12,6 +14,8 @@ def getAvailableRoom():
 
 
 def createRoom(roomName: str, playerName: str):
+    print('createRoom')
+    pass
     response = IO.sendReceiveData("CREATE_ROOM", (roomName, playerName))
     if response["status"] == "SUCCESS":
         return True
@@ -20,6 +24,8 @@ def createRoom(roomName: str, playerName: str):
 
 
 def join(roomName: str, playerName: str):
+    print('Join')
+    pass
     response = IO.sendReceiveData("JOIN_ROOM", (roomName, playerName))
     if response["status"] == "SUCCESS":
         return True
@@ -28,6 +34,8 @@ def join(roomName: str, playerName: str):
 
 
 def getPlayers():
+    print("getPlayers")
+    pass
     response = IO.sendReceiveData("GET_PLAYERS", None)
 
     if response["status"] == "SUCCESS":
@@ -63,3 +71,4 @@ def join(roomName: str, playerName: str):
 
 def getPlayers():
     pass
+"""

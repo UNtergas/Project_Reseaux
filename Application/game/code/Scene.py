@@ -1,7 +1,6 @@
 import pygame
 
 
-
 class Scene():
     def __init__(self, id, name,
                  createFunc=lambda scene: None,
