@@ -23,7 +23,7 @@ typedef struct {
 
 int isFull(Room room);
 
-
+Room initRoom(void); // Initialize a empty room
 
 Room createRoom(char* roomName, int maxPlayer, Player host);
 int destroyRoom(Room* room);

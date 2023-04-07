@@ -29,24 +29,23 @@ Player initPlayer(char* ipAddr, char* name) {
 
 void copyPlayer(Player *dst, Player *src) {
     // Length of player ip string
+    char *buffer = malloc(1024);
     unsigned long ip_length = strlen(src->ipAddr);
     // Length of player name
     unsigned long name_length = strlen(src->name);
 
     // If destination ip addr was not allocated => allocate
-    if (dst->ipAddr == NULL) {
-        dst->ipAddr = malloc(ip_length+1);
-    }
+    dst->ipAddr = malloc(ip_length+1);
+
     // If destination name was not allocated => allocate
-    if (dst->name == NULL) {
-        dst->name = malloc(name_length+1);
-    }
+    dst->name = malloc(name_length+1);
 
     strncpy(dst->ipAddr, src->ipAddr, ip_length);
-    (dst->ipAddr)[ip_length] = '\0';
-    
+    dst->ipAddr[ip_length] = '\0';
+
     strncpy(dst->name, src->name, name_length);
-    (dst->name)[ip_length] = '\0';
+    dst->name[name_length] = '\0';
+
     
 }
 

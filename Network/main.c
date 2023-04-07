@@ -27,6 +27,7 @@
 
 int *clientFds = NULL;
 
+
 #define BUFFLEN 1024
 #define PORT 12345
 
@@ -42,7 +43,9 @@ struct argv {
 
 void *bindNewDiscoveringThread(void *arg) {
     // The socket used for host of a room to listen if someone need to discover room
-    char *roomName = (char *)arg;
+    char *roomName = malloc(64);
+    sprintf(roomName, "%s", (char*)arg);
+    
     int hostSocket = socket(AF_INET, SOCK_DGRAM, 0);
     struct sockaddr_in hostAddr;
     memset(&hostAddr, 0, sizeof(hostAddr));
@@ -54,19 +57,14 @@ void *bindNewDiscoveringThread(void *arg) {
     
     if (bind(hostSocket, (const struct sockaddr *)(&hostAddr), sizeof(hostAddr)) < 0)
         stop("Error binding on master socket");
+
+    
     
     char *buffer = malloc(64);
-    if (recvfrom(hostSocket, buffer, 63, 0, (struct sockaddr *)&hostAddr, (socklen_t *)&host_len) <0) {
-        int fd = open("/Users/duy/Desktop/demo.log", O_RDWR | O_APPEND);
-        write(fd, "Failed received", strlen("Failed received"));
-        write(fd, "\n", 1);
-        close(fd);
-    } else {
-        int fd = open("/Users/duy/Desktop/demo.log", O_RDWR | O_APPEND);
-        write(fd, "Successfully received", strlen("Successfully received"));
-        write(fd, "\n", 1);
-        close(fd);
-    }
+    recvfrom(hostSocket, buffer, 63, 0, (struct sockaddr *)&hostAddr, (socklen_t *)&host_len);
+
+    
+
     if (strncmp(buffer, "?DiscoverRoom", 13) == 0) {
         char *message = malloc(64);
         sprintf(message, "!Active %s", roomName);
@@ -77,6 +75,7 @@ void *bindNewDiscoveringThread(void *arg) {
 }
 
 void *mainThread(void *argv) {
+    clientFds = (int*)malloc(MAX_PLAYER * sizeof(int));
     
     int mode = ((struct argv *)argv)->mode;
     char *roomName = ((struct argv *)argv)->roomName;
@@ -88,24 +87,27 @@ void *mainThread(void *argv) {
     getMyIP(my_ip_addr);
 
 
+
     // Create my player
     Player me = initPlayer(my_ip_addr, myName);
     // create my room
     Room myRoom = createRoom(roomName, MAX_PLAYER, me);
 
+
+    
     int opt = 1;
     // The main socket of this client
     int master_socket;
+
+
 
     // Initialize all other players
     for (int i = 0; i < myRoom.maxPlayer; ++i) {
         clientFds[i] = -1;
     }
-    int max_sd, sd, activity, new_socket, addrlen;
+    int max_sd, sd, activity, new_socket;
     ssize_t valread;
     
-    
-
     // buffer for user
     char buffer[BUFFLEN];
     memset(buffer, 0, BUFFLEN);
@@ -122,16 +124,20 @@ void *mainThread(void *argv) {
     if (setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)(&opt), sizeof(opt)) < 0)
         perror("Error setting socket option");
 
+
+
     // Sockaddr_in structure
-    struct sockaddr_in address;
-    memset(&address, 0, sizeof(address));
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    struct sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr));
+    client_addr.sin_family = AF_INET;
+    client_addr.sin_addr.s_addr = INADDR_ANY;
+    client_addr.sin_port = htons(PORT);
+
+    socklen_t addrlen = sizeof(client_addr);
 
     
 
-    if (bind(master_socket, (const struct sockaddr *)(&address), sizeof(address)) < 0)
+    if (bind(master_socket, (const struct sockaddr *)(&client_addr), sizeof(client_addr)) < 0)
         stop("Error binding on master socket");
 
     if (listen(master_socket, MAX_PLAYER) < 0)
@@ -181,20 +187,20 @@ void *mainThread(void *argv) {
         if ((activity < 0) && (errno != EINTR))
             write(1, "Select error\n", 13);
         
+        
         if (FD_ISSET(master_socket, &readfds))
         {
             // If something is gone in master socket => new client request to connect
-            if ((new_socket = accept(master_socket, (struct sockaddr *)(&address), (socklen_t *)&addrlen)) < 0)
+            if ((new_socket = accept(master_socket, (const struct sockaddr *)(&client_addr), (socklen_t *)&addrlen)) < 0)
             {
                 perror("Error connecting");
                 continue;
             }
             else
             {
-
                 // +++ Get the IP of new connection +++ //
                 char *new_ip_addr = malloc(INET_ADDRSTRLEN);
-                inet_ntop(AF_INET, &(address.sin_addr), new_ip_addr, INET_ADDRSTRLEN);
+                inet_ntop(AF_INET, &client_addr.sin_addr, new_ip_addr, INET_ADDRSTRLEN);
 
                 // +++ Get the username of new connection +++ //
                 // Read the destination message
@@ -232,8 +238,10 @@ void *mainThread(void *argv) {
                 // Send the room information to the new player
                 char *room_in4 = malloc(4096);
                 roomToStr(myRoom, room_in4);
+
                 send(new_socket, room_in4, strlen(room_in4), 0);
             }
+            
         }
         else
         {
@@ -262,7 +270,9 @@ void *mainThread(void *argv) {
 }
 
 int main(int argc, char **argv) {
-    clientFds = (int*)malloc(MAX_PLAYER * sizeof(int));
+    
+
+
 
     // +++ argv[1] is the mode of program +++ //
     // +++ argv[2] is the room name +++ //
@@ -292,15 +302,16 @@ int main(int argc, char **argv) {
 
 
     if (mode == 1) {
+        
         // mode = 1 => create new room
         pthread_t roomDiscoverTid, mainTid;
         pthread_create(&roomDiscoverTid, NULL, bindNewDiscoveringThread, argv[2]);
         pthread_create(&mainTid, NULL, mainThread, &myarg);
-        
+
         pthread_join(roomDiscoverTid, NULL);
         pthread_join(mainTid, NULL);
         
-        return 0;
+        
         
     }
 
@@ -356,7 +367,7 @@ int main(int argc, char **argv) {
         char *room_in4 = malloc(4096);
         ssize_t val_recv = recv(first_socket, room_in4, 4095, 0);
 
-        Room myRoom;
+        Room myRoom = initRoom();
         if (val_recv < 0)
         {
             perror("ERROR receiving room in4");
@@ -366,13 +377,13 @@ int main(int argc, char **argv) {
         {
             room_in4[val_recv] = '\0';
             write(1, room_in4, strlen(room_in4));
-//            strToRoom(room_in4, &myRoom);
+            strToRoom(room_in4, &myRoom);
             // connectToRoomNetwork(myRoom, &clientFds);
         }
 
         char **hostIPs = NULL;
         char **roomNames = NULL;
-//        discorverRoom(&hostIPs, &roomNames);
+        discorverRoom(&hostIPs, &roomNames);
 //        fputs(hostIPs[0], stdout);
 //        int sock = socket(AF_INET, SOCK_DGRAM, 0);
 //        struct sockaddr_in servaddr;

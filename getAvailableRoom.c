@@ -60,11 +60,6 @@ void *sendDiscoveringMessageThread(void *arg) {
         
         if (sendto(sock, message, strlen(message), 0, (struct sockaddr*)&servaddr, serv_length) < 0) {
             perror("Failed sending broadcast message");
-        } else {
-            int fd = open("/Users/duy/Desktop/demo.log", O_RDWR | O_APPEND);
-            write(fd, "Successfully sent", strlen("Successfully sent"));
-            write(fd, "\n", 1);
-            close(fd);
         }
         close(sock);
     }
@@ -113,10 +108,6 @@ void *receiveResponseThread(void *arg) {
             close(responseSocketFd);
             return NULL;;
         } else {
-            int fd = open("/Users/duy/Desktop/demo.log", O_RDWR | O_APPEND);
-            write(fd, "Successfully received response", strlen("Successfully received response"));
-            write(fd, "\n", 1);
-            close(fd);
             if (strncmp(buffer, "!Active", 7) == 0) {
                 // Receive IP adress
                 
@@ -137,10 +128,7 @@ void *receiveResponseThread(void *arg) {
                         (*roomNames)[i] = malloc(32);
                         strncpy((*roomNames)[i], result[1], strlen(result[1]));
                         
-                        int fd = open("/Users/duy/Desktop/demo.log", O_RDWR | O_APPEND);
-                        write(fd, (*roomNames)[i], strlen((*roomNames)[i]));
-                        write(fd, "\n", 1);
-                        close(fd);
+                        
                         
                         break;
                     }
