@@ -1,5 +1,5 @@
 import pygame
-from const import font1
+from const import *
 
 
 class Button:
