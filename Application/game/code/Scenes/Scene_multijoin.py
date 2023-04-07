@@ -49,7 +49,7 @@ def SceneEventHandler(self, event):
 
 
 SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multicreate', createFunc=SceneMultiCreate,
-                           runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
+              runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
 
 
 """import pygame as py
@@ -81,3 +81,5 @@ def SceneEventHandler(self, event):
 
 SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multijoin', createFunc=SceneMultiCreate,
               runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
+              
+"""
