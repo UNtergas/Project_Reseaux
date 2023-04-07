@@ -30,16 +30,14 @@ def SceneMultiCreate(self):
         INPUT_X, INPUT_Y, INPUT_WIDTH, INPUT_HEIGHT, "Room Name", font1)
 
     # Create a button to create the room
-    create_button = Button_text(BUTTON_X, INPUT_Y + INPUT_HEIGHT + INPUT_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT,
-                                lambda: create_room(self), "Create Room", font_button)
+
+    self.buttons = {}
+    self.buttons['create'] = Button_text(BUTTON_X, INPUT_Y + INPUT_HEIGHT + INPUT_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT,
+                                         lambda: create_room(self), "Create Room", font_button)
 
     # Create a button to go back to the main menu
-    back_button = Button_text(BUTTON_X, BUTTON_Y + BUTTON_HEIGHT + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT,
-                              lambda: self.switch_scene(SCENE_MENU_ID), "Back", font_button)
-
-    # Add the buttons to the scene
-    self.addButton(create_button)
-    self.addButton(back_button)
+    self.buttons['back_button'] = Button_text(BUTTON_X, BUTTON_Y + BUTTON_HEIGHT + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT,
+                                              lambda: self.switch_scene(SCENE_MENU_ID), "Back", font_button)
 
 
 def create_room(self):

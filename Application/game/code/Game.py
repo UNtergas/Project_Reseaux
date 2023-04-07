@@ -1,3 +1,4 @@
+"""
 import pygame
 
 SCREENSIZE = WIDTH, HEIGHT = 1200, 760
@@ -69,7 +70,8 @@ class Game():
         self.running = False
 
 
-"""import pygame
+"""
+import pygame
 SCREENSIZE = WIDTH, HEIGHT = 1200, 760
 
 
@@ -90,9 +92,9 @@ class Game():
         self.tick = 0
 
     def addScene(self, scene) -> None:
-        if scene.id in self.sceneMap.keys():
-            raise Exception(
-                f"The scene {self.sceneMap[scene.id]} already have id : {scene.id}")
+        # if scene.id in self.sceneMap.keys():
+        # raise Exception(
+        # f"The scene {scene.name} already have id : {scene.id}")
 
         if self.actualScene == None:
             self.actualScene = scene.id
@@ -135,4 +137,3 @@ class Game():
 
     def end(self):
         self.running = False
-"""
