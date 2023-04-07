@@ -54,9 +54,9 @@ Khang: Session (go to Session/Room.c)🔜
 Duy: Network 🔜
 Phong: Multi-player logic (go to Application/multi)✅
 # Rapport
-    Intro : Yacine []
-    Method : Duc []
-    Demo : Tuan []
-    Conclusion : Phong []
+    Intro : Khang + Yacine []
+    Method : Duke + Duy []
+    Demo : Tuan + Phong[]
+    Conclusion : Khang + Yacine []
 ```
 
