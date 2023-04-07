@@ -1,63 +1,38 @@
+import subprocess
 from Presentation import GameIO as IO
 
-
-def getAvailableRoom():
-    rooms = []
-    response = IO.sendReceiveData("GET_ROOMS", None)
-
-    if response["status"] == "SUCCESS":
-        rooms = response["data"]
-
-    return rooms
-
-
-def createRoom(roomName: str, playerName: str):
-    response = IO.sendReceiveData("CREATE_ROOM", (roomName, playerName))
-    if response["status"] == "SUCCESS":
-        return True
-    else:
-        return False
-
-
-def join(roomName: str, playerName: str):
-    response = IO.sendReceiveData("JOIN_ROOM", (roomName, playerName))
-    if response["status"] == "SUCCESS":
-        return True
-    else:
-        return False
-
-
-def getPlayers():
-    response = IO.sendReceiveData("GET_PLAYERS", None)
-
-    if response["status"] == "SUCCESS":
-        return response["data"]
-
-    return None
-
-
-"""
 # The function @getAvailableRoom is used to get the available rooms from network module
 # @parameters: {
 #   None
 # }
 #
+
+executablePath = "./../../../../executable/"
+
 def getAvailableRoom():
-    # call main.c
-    # send request to main.c
-    # receive rooom list
-    pass
+
+    def strToRoomIn4(rawStr: str):
+        arr = rawStr.split(": ")
+        return {
+            "roomName": arr[0],
+            "hostIP": arr[1]
+        }
+    
+    result = subprocess.run([executablePath+'getAvailableRoom'], stdout=subprocess.PIPE);
+
+    rooms = list(map(strToRoomIn4, result.stdout.decode('utf-8').split('\n')))
+    
     return rooms
 
 
 def createRoom(roomName: str, hostName: str):
-    pass
+    subprocess.run([executablePath+'app', '1', roomName, hostName])
     # call main.c
     # argv[1] : mode, argv[2] : roomName, argv[3] : playerName
 
 
 def join(roomName: str, playerName: str):
-    pass
+    subprocess.run([executablePath+'app', '2', roomName, playerName])
     # call main.c
 
 
