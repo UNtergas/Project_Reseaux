@@ -18,8 +18,8 @@ class IPC:
 
         self.messageQueue = sysv_ipc.MessageQueue(KEY, sysv_ipc.IPC_CREAT)
         self.mesg = None
-        self.type_send = B_TO_A
-        self.type_get = A_TO_B
+        self.type_send = A_TO_B
+        self.type_get = B_TO_A
     # The function @sendToNetwork is used to send a message to the network process
 
     def sendToNetwork(self, message: str) -> int:

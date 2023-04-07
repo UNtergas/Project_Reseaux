@@ -78,7 +78,7 @@ import pygame
 import os
 import sys
 from StackFunc import FunctionQueue
-SCREENSIZE = WIDTH, HEIGHT = 1200, 760
+SCREENSIZE = WIDTH, HEIGHT = 800, 600
 
 
 class Game():
