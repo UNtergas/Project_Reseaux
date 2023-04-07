@@ -6,10 +6,19 @@
 //
 
 #include "Support.h"
+
 #include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
+#include <netdb.h>
+#include <sys/socket.h>
 #include <string.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <strings.h>
+#include <ifaddrs.h>
+#include <fcntl.h>
+#include <sys/time.h>
 
 void stop(char *msg) {
     perror(msg);
@@ -53,5 +62,39 @@ int split(char *str, char *delim, char ***result) {
     }
     
     return num_token;
+}
+
+void getMyIP(char *myIP) {
+    // Get the IP address and netmask of the current interface
+    struct ifaddrs *ifaddr, *ifa;
+    if (getifaddrs(&ifaddr) == -1) {
+        perror("getifaddrs");
+        return;
+    }
+
+    char* base_ip = NULL;
+    struct sockaddr_in* netmask = NULL;
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL) continue;
+
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            // This is an IPv4 address
+            struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
+
+            // If the interface is the loopback interface, ignore it
+            if (strcmp(ifa->ifa_name, "lo0") == 0) continue;
+
+
+            if (inet_ntop(AF_INET, &addr->sin_addr, myIP, NI_MAXHOST) == NULL) {
+                perror("inet_ntop");
+                continue;
+            } 
+            if (strcmp(myIP, "127.0.0.1\0") == 0)
+                continue;
+            else return;
+        }
+    }
+
+    freeifaddrs(ifaddr);
 }
 

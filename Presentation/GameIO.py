@@ -1,4 +1,4 @@
-from IPC import IPC
+from .IPC import IPC
 import json
 
 # Class action is the model of game action. 
@@ -96,11 +96,8 @@ class IO:
             # Step 2: Decode string message into a list of actions
             # Step 3: push them onto the inputStack
             # +++ YOUR CODE HERE +++ #
-
+        pass
         # deu biet viet :V
             
 
-    
-
-
-    
+     
