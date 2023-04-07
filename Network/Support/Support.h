@@ -10,7 +10,9 @@
 
 #include <stdio.h>
 
+
 void stop(char *msg);
 int split(char *str, char *delim, char ***result);
+void getMyIP(char *myIP);
 
 #endif /* Error_h */

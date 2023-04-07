@@ -1,5 +1,7 @@
 from Game import Game
 from Scenes import Scene_PreMenu, Scene_menu, Scene_game, Scene_newgame, Scene_load, Scene_multi, Scene_multicreate, Scene_multijoin
+from Presentation import GameIO as IO
+
 
 if __name__ == '__main__':
     g = Game("")

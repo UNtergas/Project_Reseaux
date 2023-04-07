@@ -16,6 +16,8 @@
 #include <strings.h>
 #include <ifaddrs.h>
 #include <fcntl.h>
+#include <sys/time.h>
+#include <pthread.h>
 #define MAX_ROOMS 100
 
 int isFull(Room room) {
@@ -56,19 +58,125 @@ int destroyRoom(Room *room) {
     // Step 1: free the @room->name pointer
     // Step 2: free the @room->players pointer
     // Step 3: free the @room pointer
-
-    if(room==NULL){
+    if (room == NULL) {
         return 0;
     }
     free(room->name);
-    free(room->player);
-    room->player=NULL;
-    room->currentNumber=0;
+    free(room->players);
+    room->players = NULL;
+    room->currentNumber = 0;
     return 1;
-
 }
 
+// ++++++++++++++++++++++++++++++++++++++++++++ Discover Room ++++++++++++++++++++++++++++++++++++++++++++ //
+void *sendDiscoveringMessageThread(void *arg) {
+    char *base_ip = (char *)arg;
+    
+    
+    
+    // Iterate through all IP addresses in the LAN
+    char* ip = (char*)malloc(INET_ADDRSTRLEN * sizeof(char));
+    char buffer[64]; // Buffer for receiving message from active server
+    struct sockaddr_in sa;
+    
+    // Send discovering message to all ip adress
+    for (int i = 1; i<50; i++) {
+        snprintf(ip, INET_ADDRSTRLEN, "%s%d", base_ip, i);
 
+        // Convert the IP to binary
+        inet_pton(AF_INET, ip, &(sa.sin_addr));
+
+        // Do something with the IP here, like send a packet
+        // Create a UDP socket for broadcasting
+        int sock = socket(AF_INET, SOCK_DGRAM, 0);
+        if (sock < 0) {
+            perror("ERROR creating socket");
+            return NULL;
+        }
+
+        struct sockaddr_in servaddr;
+        memset(&servaddr, 0, sizeof(servaddr));
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_addr.s_addr = inet_addr(ip);
+        servaddr.sin_port = htons(12345);
+        socklen_t serv_length = sizeof(servaddr);
+        
+        
+        
+        char* message = "?DiscoverRoom\0";
+        if (sendto(sock, message, strlen(message), 0, (struct sockaddr*)&servaddr, serv_length) < 0) {
+            perror("Failed sending broadcast message");
+        } else {
+//            int fd = open("/Users/duy/Desktop/demo.log", O_RDWR | O_APPEND);
+//            write(fd, "Successfully sent", strlen("Successfully sent"));
+//            write(fd, "\n", 1);
+//            close(fd);
+        }
+        close(sock);
+    }
+    free(ip);
+    return NULL;
+}
+
+struct arg {
+    char*** hostIPs;
+    char*** roomNames;
+};
+
+void *receiveResponseThread(void *arg) {
+    char ***hostIPs = ((struct arg*)arg)->hostIPs;
+    char ***roomNames = ((struct arg*)arg)->roomNames;
+    
+    int responseSocketFd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (responseSocketFd < 0) {
+        perror("ERROR creating socket for handling response");
+        return NULL;
+    }
+    
+    struct sockaddr_in servaddr;
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+    servaddr.sin_port = htons(54321);
+    socklen_t serv_length = sizeof(servaddr);
+    
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+    
+    if (setsockopt(responseSocketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+        perror("ERROR setting socket option");
+    }
+    
+    if (bind(responseSocketFd, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
+        perror("ERROR binding socket");
+    }
+    
+    char buffer[64];
+    
+    for (int i=0; i<50; i++) {
+        if (recvfrom(responseSocketFd, buffer, 63, 0, (struct sockaddr*)&servaddr, &serv_length) < 0) {
+            close(responseSocketFd);
+            return NULL;;
+        } else {
+            int fd = open("/Users/duy/Desktop/demo.log", O_RDWR | O_APPEND);
+            write(fd, "Successfully received response", strlen("Successfully received response"));
+            write(fd, "\n", 1);
+            close(fd);
+            if (strncmp(buffer, "!Active", 7) == 0) {
+                for (int i=0; i<MAX_ROOMS; ++i) {
+                    if ((*hostIPs)[i] == NULL) {
+                        (*hostIPs)[i] = malloc(16);
+                        inet_ntop(AF_INET, &(servaddr.sin_addr), (*hostIPs)[i], 15);
+                        (*hostIPs)[i][15] = '\0';
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return NULL;
+}
 
 // The function @discoverRoom is used to discover if there are any active room in current LAN
 // @parameters: {
@@ -82,79 +190,83 @@ int discorverRoom(char*** hostIPs, char*** roomNames) {
     // Step 2: wait for the response
     // Step 3: write the response to @hostIPs and @roomNames
 
-    // Create a UDP socket for broadcasting
-    int sock = socket(AF_INET,SOCK_DGRAM,0);
-    if(sock<0){
-        perror("failed to create socket");
-        return -1;
-    }
-     // Enable broadcasting on the socket
-     int broadcastEnable = 1;
-    if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)) < 0) {
-        perror("Failed to set socket option");
-        close(sock);
-        return -1;
-    }
-    // Set up the broadcast address
-    struct sockaddr_in broadcastAddr;
-    memset(&broadcastAddr, 0, sizeof(broadcastAddr));
-    broadcastAddr.sin_family = AF_INET;
-    broadcastAddr.sin_port = htons(PORT);
-    broadcastAddr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
-    // Send the broadcast message
-    char* message = "?DiscoverRoom";
-    if (sendto(sock, message, strlen(message), 0, (struct sockaddr*)&broadcastAddr, sizeof(broadcastAddr)) < 0) {
-        perror("Failed to send broadcast message");
-        close(sock);
-        return -1;
-    }
-    // Set up a socket to receive responses
-    struct sockaddr_in recvAddr;
-    socklen_t recvAddrLen = sizeof(recvAddr);
-    char buffer[1024];
-    int numRooms = 0;
-    // Receive responses until a timeout occurs or the maximum number of rooms is reached
-    while (numRooms < MAX_ROOMS) {
-        // Set a timeout for the receive operation
-        struct timeval timeout;
-        timeout.tv_sec = 5; // Timeout after 5 seconds
-        timeout.tv_usec = 0;
-        if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
-            perror("Failed to set socket option");
-            close(sock);
-            return -1;
+    
+
+    if (hostIPs == NULL || roomNames == NULL) return -1;
+    if (*hostIPs == NULL) {
+        *hostIPs = malloc(MAX_ROOMS*sizeof(char*));
+        for (int i=0; i<MAX_ROOMS; ++i) {
+            (*hostIPs)[i] = NULL;
         }
-    // Receive a response message
-        memset(buffer, 0, sizeof(buffer));
-        int numBytes = recvfrom(sock, buffer, sizeof(buffer)-1, 0, (struct sockaddr*)&recvAddr, &recvAddrLen);
-        if (numBytes < 0) {
-            // Timeout occurred, so we're done
+    }
+    if (*roomNames == NULL) {
+        *roomNames = malloc(MAX_ROOMS*sizeof(char*));
+        for (int i=0; i<MAX_ROOMS; ++i) {
+            (*roomNames)[i] = NULL;
+        }
+    }
+
+    // Get the IP address and netmask of the current interface
+    struct ifaddrs *ifaddr, *ifa;
+    if (getifaddrs(&ifaddr) == -1) {
+        perror("getifaddrs");
+        return 1;
+    }
+
+    char* base_ip = NULL;
+    struct sockaddr_in* netmask = NULL;
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL) continue;
+
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            // This is an IPv4 address
+            struct sockaddr_in *addr = (struct sockaddr_in *)ifa->ifa_addr;
+
+            // If the interface is the loopback interface, ignore it
+            if (strcmp(ifa->ifa_name, "lo0") == 0) continue;
+
+            // Get the netmask for this interface
+            struct sockaddr_in *mask = (struct sockaddr_in *)ifa->ifa_netmask;
+
+            // Convert the netmask to binary
+            netmask = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
+            memset(netmask, 0, sizeof(struct sockaddr_in));
+            netmask->sin_family = AF_INET;
+            netmask->sin_addr.s_addr = mask->sin_addr.s_addr;
+
+            // Determine the base IP for the LAN
+            base_ip = (char*)malloc(INET_ADDRSTRLEN * sizeof(char));
+            memset(base_ip, 0, INET_ADDRSTRLEN * sizeof(char));
+            strncpy(base_ip, inet_ntoa(addr->sin_addr), INET_ADDRSTRLEN);
+            char* pch = strrchr(base_ip, '.');
+            if (pch != NULL) *pch = '\0';
+            strcat(base_ip, ".");
+
             break;
         }
-    // Check if the message is a room discover
-        if (strcmp(buffer, "?DiscoverRoom") == 0) {
-            // Extract the host IP and room name from the response message
-            char* hostIP = inet_ntoa(recvAddr.sin_addr);  //  hostIP now points to a string containing the host IP in dotted decimal format.
-            char* roomName = strchr(buffer, ':') + 1;     //  roomName now points to the room name string in the received message.
+    }
+    freeifaddrs(ifaddr);
+    
+    
+    pthread_t sendDiscoveringTid, receiveResponseTid;
+    
+    pthread_create(&sendDiscoveringTid, NULL, sendDiscoveringMessageThread, base_ip);
+    
+    struct arg response = {hostIPs, roomNames};
+    pthread_create(&receiveResponseTid, NULL, receiveResponseThread, &response);
+    
+    pthread_join(receiveResponseTid, NULL);
+    pthread_join(sendDiscoveringTid, NULL);
+    
 
-            // Allocate memory for the host IP and room name strings
-            int hostIPLen = strlen(hostIP) + 1;
-            int roomNameLen = strlen(roomName) + 1;
-            *hostIPs[numRooms] = malloc(hostIPLen);
-            *roomNames[numRooms] = malloc(roomNameLen);
 
-            // Copy the host IP and room name into the arrays
-            strncpy(*hostIPs[numRooms], hostIP, hostIPLen);
-            strncpy(*roomNames[numRooms], roomName, roomNameLen);
+    free(base_ip);
+    free(netmask);
 
-            numRooms++;
-        }
-    } 
-    close(sock);
-    return numRooms;
-
+    return 0;
 }
 
+// ++++++++++++++++++++++++++++++++++++++++++++ Discover Room ++++++++++++++++++++++++++++++++++++++++++++ //
 
 
 // The function @joinRoom is used to request joining into a room
@@ -162,76 +274,76 @@ int discorverRoom(char*** hostIPs, char*** roomNames) {
 //  @hostIPaddr: the IP address of room's host 
 // }
 // @return: 0 if successfully join of -1 if not
-int joinRoom(char *hostIPaddr, char *roomName) {
-    // Step 1: connect with host via @hostIPaddr (using TCP socket)
-    // Step 2: send the joining request message
-    //      The message's content: ?Join{@roomName} 
-    //      replace the {@roomName} with @roomName
-    // Step 3: wait for response
-    // Step 4: decode response message
-    // Step 5: call @connectToRoomNetwork function to connect with the rest of room
+// int joinRoom(char *hostIPaddr, char *roomName) {
+//     // Step 1: connect with host via @hostIPaddr (using TCP socket)
+//     // Step 2: send the joining request message
+//     //      The message's content: ?Join{@roomName} 
+//     //      replace the {@roomName} with @roomName
+//     // Step 3: wait for response
+//     // Step 4: decode response message
+//     // Step 5: call @connectToRoomNetwork function to connect with the rest of room
 
    
-    // Step 1: connect with host via @hostIPaddr (using TCP socket)
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
-        perror("Failed to create socket");
-        return -1;
-    }
+//     // Step 1: connect with host via @hostIPaddr (using TCP socket)
+//     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+//     if (sockfd < 0) {
+//         perror("Failed to create socket");
+//         return -1;
+//     }
 
-    struct sockaddr_in servaddr;
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(PORT);
+//     struct sockaddr_in servaddr;
+//     memset(&servaddr, 0, sizeof(servaddr));
+//     servaddr.sin_family = AF_INET;
+//     servaddr.sin_port = htons(88888);
 
-    if (inet_pton(AF_INET, hostIPaddr, &servaddr.sin_addr) <= 0) {
-        perror("Invalid address/ Address not supported");
-        close(sockfd);
-        return -1;
-    }
+//     if (inet_pton(AF_INET, hostIPaddr, &servaddr.sin_addr) <= 0) {
+//         perror("Invalid address/ Address not supported");
+//         close(sockfd);
+//         return -1;
+//     }
 
-    if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-        perror("Failed to connect");
-        close(sockfd);
-        return -1;
-    }
+//     if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
+//         perror("Failed to connect");
+//         close(sockfd);
+//         return -1;
+//     }
 
-    // Step 2: send the joining request message
-    char message[1024];
-    sprintf(message, "?Join{%s}", roomName);
+//     // Step 2: send the joining request message
+//     char message[1024];
+//     sprintf(message, "?Join{%s}", roomName);
 
-    if (send(sockfd, message, strlen(message), 0) < 0) {
-        perror("Failed to send joining request message");
-        close(sockfd);
-        return -1;
-    }
+//     if (send(sockfd, message, strlen(message), 0) < 0) {
+//         perror("Failed to send joining request message");
+//         close(sockfd);
+//         return -1;
+//     }
 
-    // Step 3: wait for response
-    char buffer[1024];
-    memset(buffer, 0, sizeof(buffer));
-    if (recv(sockfd, buffer, sizeof(buffer), 0) < 0) {
-        perror("Failed to receive response message");
-        close(sockfd);
-        return -1;
-    }
+//     // Step 3: wait for response
+//     char buffer[1024];
+//     memset(buffer, 0, sizeof(buffer));
+//     if (recv(sockfd, buffer, sizeof(buffer), 0) < 0) {
+//         perror("Failed to receive response message");
+//         close(sockfd);
+//         return -1;
+//     }
 
-    // Step 4: decode response message
-    if (strcmp(buffer, "?JoinAccept") != 0) {
-        printf("Join request denied by host\n");
-        close(sockfd);
-        return -1;
-    }
+//     // Step 4: decode response message
+//     if (strcmp(buffer, "?JoinAccept") != 0) {
+//         printf("Join request denied by host\n");
+//         close(sockfd);
+//         return -1;
+//     }
 
-    // Step 5: call @connectToRoomNetwork function to connect with the rest of room
-    int result = connectToRoomNetwork(sockfd);
-    if (result < 0) {
-        perror("Failed to connect to room network");
-        close(sockfd);
-        return -1;
-    }
+//     // Step 5: call @connectToRoomNetwork function to connect with the rest of room
+//     int result = connectToRoomNetwork(sockfd);
+//     if (result < 0) {
+//         perror("Failed to connect to room network");
+//         close(sockfd);
+//         return -1;
+//     }
 
-    return sockfd;
-}
+//     return sockfd;
+// }
 
 
 
@@ -243,68 +355,68 @@ int joinRoom(char *hostIPaddr, char *roomName) {
 //  @room: the room we want to connect to create a P2P network
 //  @clientSocketFds: the list of used to write the new sockets we will create into
 // }
-int connectToRoomNetwork(Room room, int **clientSocketFds) {
-    // Step 1: verify if @clientSocketFds is NULL, if yes => return -1
-    // Step 2: verify if *clientSocketFds is NULL, if yes => allocate it as an array of @room.maxPlayer element
-    // Step 3: check if the current number of players of rooms (@room.currentNumber) is 2 or not?
-    //      If yes, return 0 (2 means that the room contains only host and this players)
-    // Step 4: do a for loop to create new connections to all of the members of room
-    //      except the first and the last one (because they are the host and this player)
-    // Step 5: write new created socket into *clientSocketFds
+// int connectToRoomNetwork(Room room, int **clientSocketFds) {
+//     // Step 1: verify if @clientSocketFds is NULL, if yes => return -1
+//     // Step 2: verify if *clientSocketFds is NULL, if yes => allocate it as an array of @room.maxPlayer element
+//     // Step 3: check if the current number of players of rooms (@room.currentNumber) is 2 or not?
+//     //      If yes, return 0 (2 means that the room contains only host and this players)
+//     // Step 4: do a for loop to create new connections to all of the members of room
+//     //      except the first and the last one (because they are the host and this player)
+//     // Step 5: write new created socket into *clientSocketFds
     
     
-    // Step 1: verify if @clientSocketFds is NULL, if yes => return -1
-    if (clientSocketFds == NULL) {
-        return -1;
-    }
+//     // Step 1: verify if @clientSocketFds is NULL, if yes => return -1
+//     if (clientSocketFds == NULL) {
+//         return -1;
+//     }
     
-    // Step 2: verify if *clientSocketFds is NULL, if yes => allocate it as an array of @room->maxPlayer element
-    if (*clientSocketFds == NULL) {
-        *clientSocketFds = malloc(room->maxPlayer * sizeof(int));
-        if (*clientSocketFds == NULL) {
-            return -1;
-        }
-    }
+//     // Step 2: verify if *clientSocketFds is NULL, if yes => allocate it as an array of @room->maxPlayer element
+//     if (*clientSocketFds == NULL) {
+//         *clientSocketFds = malloc(room->maxPlayer * sizeof(int));
+//         if (*clientSocketFds == NULL) {
+//             return -1;
+//         }
+//     }
     
-    // Step 3: check if the current number of players of rooms (@room->currentNumber) is 2 or not?
-    //      If yes, return 0 (2 means that the room contains only host and this player)
-    if (room->currentNumber == 2) {
-        return 0;
-    }
+//     // Step 3: check if the current number of players of rooms (@room->currentNumber) is 2 or not?
+//     //      If yes, return 0 (2 means that the room contains only host and this player)
+//     if (room->currentNumber == 2) {
+//         return 0;
+//     }
     
-    // Step 4: do a for loop to create new connections to all of the members of room
-    //      except the first and the last one (because they are the host and this player)
-    int i, fd;
-    struct sockaddr_in servAddr;
-    for (i = 1; i < room->currentNumber - 1; i++) {
-        // Create a new socket
-        fd = socket(AF_INET, SOCK_STREAM, 0);
-        if (fd < 0) {
-            return -1;
-        }
+//     // Step 4: do a for loop to create new connections to all of the members of room
+//     //      except the first and the last one (because they are the host and this player)
+//     int i, fd;
+//     struct sockaddr_in servAddr;
+//     for (i = 1; i < room->currentNumber - 1; i++) {
+//         // Create a new socket
+//         fd = socket(AF_INET, SOCK_STREAM, 0);
+//         if (fd < 0) {
+//             return -1;
+//         }
         
-        // Set the socket address
-        memset(&servAddr, 0, sizeof(servAddr));
-        servAddr.sin_family = AF_INET;
-        servAddr.sin_addr.s_addr = inet_addr(room->players[i].ipAddr);
-        servAddr.sin_port = htons(PORT);
+//         // Set the socket address
+//         memset(&servAddr, 0, sizeof(servAddr));
+//         servAddr.sin_family = AF_INET;
+//         servAddr.sin_addr.s_addr = inet_addr(room->players[i].ipAddr);
+//         servAddr.sin_port = htons(PORT);
         
-        // Connect to the server
-        if (connect(fd, (struct sockaddr*)&servAddr, sizeof(servAddr)) < 0) {
-            close(fd);
-            return -1;
-        }
+//         // Connect to the server
+//         if (connect(fd, (struct sockaddr*)&servAddr, sizeof(servAddr)) < 0) {
+//             close(fd);
+//             return -1;
+//         }
         
-        // Write the new socket into *clientSocketFds
-        (*clientSocketFds)[i] = fd;
-    }
+//         // Write the new socket into *clientSocketFds
+//         (*clientSocketFds)[i] = fd;
+//     }
     
-    return 0;
+//     return 0;
 
     
 
 
-}
+// }
 
 
 
@@ -314,21 +426,21 @@ int connectToRoomNetwork(Room room, int **clientSocketFds) {
 //  @room: the information of current room
 // }
 // @return: 0 if successfully send the room's in4 or -1 if not
-int sendRoomIn4(int newPlayerSocketFd, Room room) {
-    // Step 1: encoded room's in4 by calling the function @roomToStr from MSGCode module
-    // Step 2: send the new encoding message to new player via @newPlayerSocketFd
+// int sendRoomIn4(int newPlayerSocketFd, Room room) {
+//     // Step 1: encoded room's in4 by calling the function @roomToStr from MSGCode module
+//     // Step 2: send the new encoding message to new player via @newPlayerSocketFd
 
-    // Step 1: encode room's in4 by calling the function @roomToStr from MSGCode module
-    char *roomIn4 = roomToStr(&room);
+//     // Step 1: encode room's in4 by calling the function @roomToStr from MSGCode module
+//     char *roomIn4 = roomToStr(&room);
 
-    // Step 2: send the new encoding message to new player via @newPlayerSocketFd
-    if (send(newPlayerSocketFd, roomIn4, strlen(roomIn4), 0) < 0) {
-        perror("Failed to send room in4");
-        return -1;
-    }
+//     // Step 2: send the new encoding message to new player via @newPlayerSocketFd
+//     if (send(newPlayerSocketFd, roomIn4, strlen(roomIn4), 0) < 0) {
+//         perror("Failed to send room in4");
+//         return -1;
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
 
 

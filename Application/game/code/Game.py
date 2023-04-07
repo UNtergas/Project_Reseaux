@@ -1,6 +1,6 @@
 import pygame
 SCREENSIZE = WIDTH, HEIGHT = 1200, 760
-
+from Presentation import IPC
 
 class Game():
     def __init__(self, save):

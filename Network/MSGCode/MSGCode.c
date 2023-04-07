@@ -36,7 +36,7 @@ int roomToStr(Room room, char *buffer) {
         unsigned long player_in4_length = 11+strlen(room.players[i].ipAddr)+strlen(room.players[i].name);
 
         char *player_in4 = malloc(player_in4_length+1);
-        sprintf(player_in4, "player: %s, %s", room.players[i].ipAddr, room.players[i].name);
+        sprintf(player_in4, "player: %s, %s\n", room.players[i].ipAddr, room.players[i].name);
         player_in4[player_in4_length] = '\0';
         
         // add to encoding message

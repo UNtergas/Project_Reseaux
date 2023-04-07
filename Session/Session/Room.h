@@ -11,7 +11,6 @@
 #include <stdio.h>
 
 #include "../Player/Player.h"
-#include "../Client/Client.h"
 
 typedef struct {
     char* name; // name of room
