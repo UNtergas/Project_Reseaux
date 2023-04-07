@@ -54,10 +54,11 @@ Khang: Session (go to Session/Room.c)🔜
 Duy: Network 🔜
 Phong: Multi-player logic (go to Application/multi)✅
 # Rapport
-   - [ ] Intro : Khang + Yacine 
-   - [ ] Method : Duy + Phong 
-   - [ ] Architecture Réseaux : Duke 
-   - [ ] Architecture Système : Tuan 
-   - [ ] Conclusion : Khang + Yacine 
+
+[ ] Intro : Khang + Yacine 
+[ ] Method : Duy + Phong 
+[ ] Architecture Réseaux : Duke 
+[ ] Architecture Système : Tuan 
+[ ] Conclusion : Khang + Yacine 
 ```
 
