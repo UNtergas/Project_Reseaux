@@ -1,61 +1,13 @@
 import subprocess
-from Presentation import GameIO as IO
+# from Presentation import GameIO as IO
 
-<<<<<<< yacine
-
-def getAvailableRoom():
-    print('getAvailableRoom')
-    pass
-    rooms = []
-    response = IO.sendReceiveData("GET_ROOMS", None)
-
-    if response["status"] == "SUCCESS":
-        rooms = response["data"]
-
-    return rooms
-
-
-def createRoom(roomName: str, playerName: str):
-    print('createRoom')
-    pass
-    response = IO.sendReceiveData("CREATE_ROOM", (roomName, playerName))
-    if response["status"] == "SUCCESS":
-        return True
-    else:
-        return False
-
-
-def join(roomName: str, playerName: str):
-    print('Join')
-    pass
-    response = IO.sendReceiveData("JOIN_ROOM", (roomName, playerName))
-    if response["status"] == "SUCCESS":
-        return True
-    else:
-        return False
-
-
-def getPlayers():
-    print("getPlayers")
-    pass
-    response = IO.sendReceiveData("GET_PLAYERS", None)
-
-    if response["status"] == "SUCCESS":
-        return response["data"]
-
-    return None
-
-
-"""
-=======
->>>>>>> main
 # The function @getAvailableRoom is used to get the available rooms from network module
 # @parameters: {
 #   None
 # }
 #
 
-executablePath = "./../../../../executable/"
+executablePath = "./../../executable/"
 
 def getAvailableRoom():
 
@@ -66,28 +18,28 @@ def getAvailableRoom():
             "hostIP": arr[1]
         }
     
-    result = subprocess.run([executablePath+'getAvailableRoom'], stdout=subprocess.PIPE);
-
-    rooms = list(map(strToRoomIn4, result.stdout.decode('utf-8').split('\n')))
+    result = subprocess.run([executablePath+'getAvailableRoom'], stdout=subprocess.PIPE)
+    result = result.stdout.decode('utf-8').split('\n')
+    result.pop()
+    rooms = None
+    if result != None:
+        rooms = list(map(strToRoomIn4, result))
     
     return rooms
 
-
 def createRoom(roomName: str, hostName: str):
-    subprocess.run([executablePath+'app', '1', roomName, hostName])
+    process = subprocess.Popen([executablePath+'app', '1', roomName, hostName], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print("Room created!")
     # call main.c
     # argv[1] : mode, argv[2] : roomName, argv[3] : playerName
 
-
-def join(roomName: str, playerName: str):
-    subprocess.run([executablePath+'app', '2', roomName, playerName])
+def join(hostIP: str, playerName: str):
+    subprocess.run([executablePath+'app', '2', hostIP, playerName])
     # call main.c
 
+rooms = getAvailableRoom()
+print(rooms)
 
-def getPlayers():
-<<<<<<< yacine
-    pass
-"""
-=======
-    pass
->>>>>>> main
+
+
+

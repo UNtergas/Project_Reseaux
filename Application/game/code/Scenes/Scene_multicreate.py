@@ -5,6 +5,7 @@ from Inputbox import InputBox
 from Save import *
 from const import *
 from .Scene_ids import *
+from multiplayer.multi import *
 
 
 def SceneMultiCreate(self):
@@ -47,7 +48,7 @@ def SceneMultiCreateRun(self):
 
 def SceneEventHandler(self, event):
     if event.type == event_types["LaunchGame"]:
-        print(event)
+        createRoom(self.box['inputbox'].text, 'John')
         self.game.save = Save(self.box["inputbox"].text)
         self.game.switchScene(SCENE_GAME_ID)
         self.box['inputbox'].text = ""
