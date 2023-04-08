@@ -25,11 +25,17 @@ int isFull(Room room) {
     return 0;
 }
 
-
+Room initRoom(void) {
+    Room newRoom;
+    newRoom.name = NULL;
+    newRoom.maxPlayer = 0;
+    newRoom.currentNumber = 0;
+    newRoom.players = NULL;
+    return newRoom;
+}
 
 Room createRoom(char* roomName, int maxPlayer, Player host) {
     Room newRoom;
-    
     // Initialize room name
     unsigned long nameLength = strlen(roomName) + 1;
     newRoom.name = malloc(nameLength);
@@ -38,14 +44,18 @@ Room createRoom(char* roomName, int maxPlayer, Player host) {
     
     // Initialize player number
     newRoom.maxPlayer = maxPlayer;
+
+    newRoom.currentNumber = 0;
     
     // Initialize players of room
     newRoom.players = malloc(maxPlayer*sizeof(Player));
+    for (int i=0; i<maxPlayer; ++i) {
+        newRoom.players[i].ipAddr = NULL;
+        newRoom.players[i].name = NULL;
+    }
     
     addPlayer(&newRoom, &host);
-    
-    newRoom.currentNumber = 1;
-    
+
     return newRoom;
 }
 
@@ -248,12 +258,10 @@ int destroyRoom(Room *room) {
 
 void addPlayer(Room *room, Player *newPlayer) {
     if (isFull(*room)) return;
-    if (room->players == NULL) {
-        room->players = malloc((room->maxPlayer)*sizeof(Player));
-    }
-    for (int i=0; i<room->maxPlayer; ++i) {
+    
+    for (int i=0; i<room->maxPlayer; i++) {
         if (isNA(room->players[i])) {
-            copyPlayer(&room->players[i], newPlayer);
+            copyPlayer(&(room->players[i]), newPlayer);
             room->currentNumber += 1;
             return;
         }
