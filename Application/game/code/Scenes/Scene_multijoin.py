@@ -5,6 +5,7 @@ from Inputbox import InputBox
 from Save import *
 from const import *
 from .Scene_ids import *
+from multiplayer.multi import *
 
 
 def SceneMultiJoin(self):
@@ -47,7 +48,11 @@ def SceneMultiJoinRun(self):
 
 def SceneEventHandler(self, event):
     if event.type == event_types["LaunchGame"]:
-        print(event)
+        rooms = getAvailableRoom()
+        for room in rooms:
+            if room["roomName"] == self.box["inputbox"].text:
+                join(room["hostIP"],'John')
+            break
         self.game.save = Save(self.box["inputbox"].text)
         self.game.switchScene(SCENE_GAME_ID)
         self.box['inputbox'].text = ""

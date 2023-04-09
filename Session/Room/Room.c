@@ -19,9 +19,12 @@
 #include <sys/time.h>
 #include <pthread.h>
 
+#include "../../Network/IPC_Interface/Message/msg.h"
 
-int isFull(Room room) {
-    if (room.maxPlayer == room.currentNumber) return 1;
+int isFull(Room room)
+{
+    if (room.maxPlayer == room.currentNumber)
+        return 1;
     return 0;
 }
 
@@ -41,7 +44,7 @@ Room createRoom(char* roomName, int maxPlayer, Player host) {
     newRoom.name = malloc(nameLength);
     strncpy(newRoom.name, roomName, nameLength);
     newRoom.name[nameLength] = '\0';
-    
+
     // Initialize player number
     newRoom.maxPlayer = maxPlayer;
 
@@ -59,12 +62,12 @@ Room createRoom(char* roomName, int maxPlayer, Player host) {
     return newRoom;
 }
 
-
 // The function @destroyRoom is used to end the current room (current session)
 // @parameters: {
 //  @room: The room we want to end
 // }
-int destroyRoom(Room *room) {
+int destroyRoom(Room *room)
+{
     // Step 1: free the @room->name pointer
     // Step 2: free the @room->players pointer
     // Step 3: free the @room pointer
@@ -83,85 +86,21 @@ int destroyRoom(Room *room) {
 
 // The function @joinRoom is used to request joining into a room
 // @parameters: {
-//  @hostIPaddr: the IP address of room's host 
+//  @hostIPaddr: the IP address of room's host
 // }
 // @return: 0 if successfully join of -1 if not
-// int joinRoom(char *hostIPaddr, char *roomName) {
-//     // Step 1: connect with host via @hostIPaddr (using TCP socket)
-//     // Step 2: send the joining request message
-//     //      The message's content: ?Join{@roomName} 
-//     //      replace the {@roomName} with @roomName
-//     // Step 3: wait for response
-//     // Step 4: decode response message
-//     // Step 5: call @connectToRoomNetwork function to connect with the rest of room
-
-   
-//     // Step 1: connect with host via @hostIPaddr (using TCP socket)
-//     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-//     if (sockfd < 0) {
-//         perror("Failed to create socket");
-//         return -1;
-//     }
-
-//     struct sockaddr_in servaddr;
-//     memset(&servaddr, 0, sizeof(servaddr));
-//     servaddr.sin_family = AF_INET;
-//     servaddr.sin_port = htons(88888);
-
-//     if (inet_pton(AF_INET, hostIPaddr, &servaddr.sin_addr) <= 0) {
-//         perror("Invalid address/ Address not supported");
-//         close(sockfd);
-//         return -1;
-//     }
-
-//     if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-//         perror("Failed to connect");
-//         close(sockfd);
-//         return -1;
-//     }
-
-//     // Step 2: send the joining request message
-//     char message[1024];
-//     sprintf(message, "?Join{%s}", roomName);
-
-//     if (send(sockfd, message, strlen(message), 0) < 0) {
-//         perror("Failed to send joining request message");
-//         close(sockfd);
-//         return -1;
-//     }
-
-//     // Step 3: wait for response
-//     char buffer[1024];
-//     memset(buffer, 0, sizeof(buffer));
-//     if (recv(sockfd, buffer, sizeof(buffer), 0) < 0) {
-//         perror("Failed to receive response message");
-//         close(sockfd);
-//         return -1;
-//     }
-
-//     // Step 4: decode response message
-//     if (strcmp(buffer, "?JoinAccept") != 0) {
-//         printf("Join request denied by host\n");
-//         close(sockfd);
-//         return -1;
-//     }
-
-//     // Step 5: call @connectToRoomNetwork function to connect with the rest of room
-//     int result = connectToRoomNetwork(sockfd);
-//     if (result < 0) {
-//         perror("Failed to connect to room network");
-//         close(sockfd);
-//         return -1;
-//     }
-
-//     return sockfd;
-// }
+int joinRoom(char *hostIPaddr, char *roomName)
+{
+    // Step 1: connect with host via @hostIPaddr (using TCP socket)
+    // Step 2: send the joining request message
+    //      The message's content: ?Join{@roomName}
+    //      replace the {@roomName} with @roomName
+    // Step 3: wait for response
+    // Step 4: decode response message
+    // Step 5: call @connectToRoomNetwork function to connect with the rest of room
 
 
-
-
-
-// The function @connectToRoomNetwork is used to connect to the rest of room (except host) 
+// The function @connectToRoomNetwork is used to connect to the rest of room (except host)
 // The purpose is create a P2P network in room
 // @parameters: {
 //  @room: the room we want to connect to create a P2P network
@@ -230,8 +169,6 @@ int destroyRoom(Room *room) {
 
 // }
 
-
-
 // The function @sendRoomIn4 is used to send the current room's information to the new player who just join the room
 // @parameters: {
 //  @newPlayerSocketFd: the socket fd of new player
@@ -254,46 +191,99 @@ int destroyRoom(Room *room) {
 //     return 0;
 // }
 
-
-
-void addPlayer(Room *room, Player *newPlayer) {
-    if (isFull(*room)) return;
-    
-    for (int i=0; i<room->maxPlayer; i++) {
-        if (isNA(room->players[i])) {
-            copyPlayer(&(room->players[i]), newPlayer);
+void addPlayer(Room *room, Player *newPlayer)
+{
+    if (isFull(*room))
+        return;
+    if (room->players == NULL)
+    {
+        room->players = malloc((room->maxPlayer) * sizeof(Player));
+    }
+    for (int i = 0; i < room->maxPlayer; ++i)
+    {
+        if (isNA(room->players[i]))
+        {
+            copyPlayer(&room->players[i], newPlayer);
             room->currentNumber += 1;
             return;
         }
     }
 }
 
-
-
 // The function @sendGameStateToNewPlayer is used to send the current game state to the new player of the room
 // parameters: {
 //  @encodedGameState: the game state encoded under the type of string
-//  @newPlayerSocketFd: the socket fd of new player 
+//  @newPlayerSocketFd: the socket fd of new player
 // }
 // @return: 0 if successfully send or -1 if not
-int sendGameStateToNewPlayer(char *encodedGameState, int newPlayerSocketFd) {
-    // Get the length of the encoded game state string
-    int len = strlen(encodedGameState);
-    
-    // Send the length of the message first
-    int len_sent = send(newPlayerSocketFd, &len, sizeof(len), 0);
-    if (len_sent < 0) {
-        perror("Error sending message length");
+int sendGameStateToNewPlayer(char *filePath, int newPlayerSocketFd)
+{
+    // +++ YOUR CODE HERE +++ //
+    FILE *ptr;
+    fopen(filePath, "r");
+    if (ptr == NULL)
+    {
+        printf("file ");
         return -1;
     }
-    
-    // Send the encoded game state string
-    int sent = send(newPlayerSocketFd, encodedGameState, len, 0);
-    if (sent < 0) {
-        perror("Error sending message");
-        return -1;
+    char buffer[1024];
+    while (!feof(ptr))
+    {
+        size_t bytesRead = fread(buffer, sizeof(char), sizeof(buffer), ptr);
+        // Process the data in the buffer
+        if (send(newPlayerSocketFd, buffer, 1024, 0) == -1)
+        {
+            printf("Error sending gamestate to new player \n");
+            exit(EXIT_FAILURE);
+        }
     }
-    
-    return 0;
+    fclose(ptr);
 }
 
+int receivedFirstJoin(int newPlayerSocketFd, char *filePath)
+{
+    FILE *ptr;
+    char buffer[1024];
+    ssize_t bytesReceived;
+    ptr = fopen(filePath, "r+");
+    while ((bytesReceived = recv(newPlayerSocketFd, buffer, 1024, 0)) > 0)
+    {
+        if (fwrite(buffer, 1, bytesReceived, ptr) != bytesReceived)
+        {
+            perror("Failed to write data to file");
+            exit(1);
+        }
+    }
+    fclose(ptr);
+}
+
+int requestGameState(int msgid, char *filePath)
+{
+    // Step 1: Send the request to game via msgid
+    //      The request has the form: "?GameState"
+    // Step 2: Wait for the response from game
+    // Step 3: Write into the results
+    //      Step 3.1: if results is NULL => return -1
+    //      Step 3.2: if *results is NULL => allocate *results
+    //      Step 3.3: write the results into results
+
+    // +++ YOUR CODE HERE +++ //
+    // FILE *fptr;
+    msg requestPython = {C_TO_PY, "?GameState"};
+    sprintf(requestPython.msg_text, "?GameState:%s", filePath);
+    msg GameState = {PY_TO_C, NULL};
+    if (msgsnd(msgid, &requestPython, sizeof(requestPython), 0) == -1)
+    {
+        printf("msgsnd ?GameState failed\n");
+    }
+    if (msgrcv(msgid, &GameState, sizeof(GameState), PY_TO_C, 0) == -1)
+    {
+        printf("msgrev GameState Failed\n");
+    }
+    if (strcmp(GameState.msg_text, "Done") == 0)
+    {
+
+        return 0;
+    }
+    return 1;
+}

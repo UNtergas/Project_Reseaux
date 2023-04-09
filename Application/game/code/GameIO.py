@@ -1,10 +1,7 @@
 from IPC import IPC
 import time
 import json
-import socket
 from World import World
-import errno
-PORT = 8000
 # Class action is the model of game action.
 # An action is an input from player (user)
 
@@ -13,14 +10,13 @@ PORT = 8000
 # It plays the role of processing the output from game (application layer) to network (session layer)
 # and processing the input from the network (session layer) to game (application layer)
 class IO:
-    def __init__(self, socket) -> None:
+    def __init__(self) -> None:
         # The stack used for storing the input from the network (list of Actions)
         self.inputStack = None
         # The stack used for storing the output from the game (list of Actions)
         self.outputStack = None
         self.funcStack = FunctionQueue()
         self.ipc = IPC()
-        self.socket = socket
     # Private method @_actionToStr is used to encode an action to a string. It help to transmit in4 in the network
     # @parameters: {
     #   @self: This class (not used)
@@ -28,59 +24,37 @@ class IO:
     # }
     # @return: a string (encoding version of action)
 
-    # Private method @strToAction is used to decode a string to an action.
-    # @parameters: {
-    #   @self: This class (not used)
-    #   @encodedAction: The string - the encoding version of action
-    # }
-    # @return: an object of class Action (an action)
-    def connectSocket(self, addr):
-        self.socket.connect()
-
-    def sendtoSocket(self, message: str) -> int:
-        if self.socket != None:
-            try:
-                self.socket.sendall(message.encode('utf-8'))
-            except BlockingIOError as e:
-                pass
-
-    def recvfromSocket(self):
-        if self.socket != None:
-            try:
-                data = self.socket.recv(369369)
-                if data is not None:
-                    return data.decode('utf-8')
-                return None
-            except BlockingIOError:
-                return None
+        # Private method @strToAction is used to decode a string to an action.
+        # @parameters: {
+        #   @self: This class (not used)
+        #   @encodedAction: The string - the encoding version of action
+        # }
+        # @return: an object of class Action (an action)
 
     def _tempToStr(self, temp):
         del temp['image']
         return json.dumps(temp)
 
     def _strToAction(self, game, function_queue):
-        recvmesg = self.recvfromSocket()
-        print("incoming info:", recvmesg)
+        recvmesg = self.receiveAction()
         if (recvmesg is not None):
             for encodedAction in recvmesg.split("\n"):
-                try:
-                    encodedAction = json.loads(encodedAction)
-                    type = encodedAction['type']
-                    temp = json.loads(encodedAction['temp'])
-                    timestamp = encodedAction['timestamp']
-                    match type:
-                        case "contruction":
-                            function_queue.enqueue(
-                                game.world.construction, timestamp, temp, game.mini_map)
-                            # game.world.construction(temp, game.mini_map)
-                        case "destruction":
-                            function_queue.enqueue(
-                                game.world.destruction, timestamp, temp, game.mini_map, game.H_R)
-                        case "cheminement":
-                            function_queue.enqueue(
-                                game.world.cheminement, timestamp, temp, game.mini_map)
-                except json.JSONDecodeError:
-                    pass
+                encodedAction = json.loads(encodedAction)
+                type = encodedAction['type']
+                temp = json.loads(encodedAction['temp'])
+                timestamp = encodedAction['timestamp']
+                match type:
+                    case "contruction":
+                        function_queue.enqueue(
+                            game.world.construction, timestamp, temp, game.mini_map)
+                        # game.world.construction(temp, game.mini_map)
+                    case "destruction":
+                        function_queue.enqueue(
+                            game.world.destruction, timestamp, temp, game.mini_map, game.H_R)
+                    case "cheminement":
+                        function_queue.enqueue(
+                            game.world.cheminement, timestamp, temp, game.mini_map)
+
         # Decode the json object into an Action object
         # +++ YOUR CODE HERE +++ #
 
@@ -94,8 +68,7 @@ class IO:
         # Step 1: Encode all action in @self.outputStack
         temp = self._tempToStr(temp)
         mesg = {"type": action, "temp": temp, "timestamp": timestamp}
-        self.sendtoSocket(json.dumps(mesg))
-        # self.ipc.sendToNetwork(json.dumps(mesg))
+        self.ipc.sendToNetwork(json.dumps(mesg))
 
         # Step 2: Send the encoded message using @self.IPC
         # Step 3: Remove all action in @self.outputStack

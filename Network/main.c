@@ -61,21 +61,22 @@ void *bindNewDiscoveringThread(void *arg) {
     
     
     char *buffer = malloc(64);
-    recvfrom(hostSocket, buffer, 63, 0, (struct sockaddr *)&hostAddr, (socklen_t *)&host_len);
-
-    
-
-    if (strncmp(buffer, "?DiscoverRoom", 13) == 0) {
-        char *message = malloc(64);
-        sprintf(message, "!Active %s", roomName);
-        hostAddr.sin_port = htons(54321);
-        sendto(hostSocket, message, strlen(message), 0, (struct sockaddr *)&hostAddr, (socklen_t)host_len);
+    while (1) {
+        recvfrom(hostSocket, buffer, 63, 0, (struct sockaddr *)&hostAddr, (socklen_t *)&host_len);
+        if (strncmp(buffer, "?DiscoverRoom", 13) == 0) {
+            char *message = malloc(64);
+            sprintf(message, "!Active %s", roomName);
+            hostAddr.sin_port = htons(54321);
+            sendto(hostSocket, message, strlen(message), 0, (struct sockaddr *)&hostAddr, (socklen_t)host_len);
+        }
     }
+
     return NULL;
 }
 
 void *mainThread(void *argv) {
-    clientFds = (int*)malloc(MAX_PLAYER * sizeof(int));
+    // MAX_PLAYER + 1 for connection with game
+    clientFds = (int*)malloc((MAX_PLAYER+1) * sizeof(int));
     
     int mode = ((struct argv *)argv)->mode;
     char *roomName = ((struct argv *)argv)->roomName;
@@ -91,7 +92,7 @@ void *mainThread(void *argv) {
     // Create my player
     Player me = initPlayer(my_ip_addr, myName);
     // create my room
-    Room myRoom = createRoom(roomName, MAX_PLAYER, me);
+    Room myRoom = createRoom(roomName, MAX_PLAYER+1, me);
 
 
     
@@ -140,7 +141,7 @@ void *mainThread(void *argv) {
     if (bind(master_socket, (const struct sockaddr *)(&client_addr), sizeof(client_addr)) < 0)
         stop("Error binding on master socket");
 
-    if (listen(master_socket, MAX_PLAYER) < 0)
+    if (listen(master_socket, MAX_PLAYER+1) < 0)
         stop("Error listening on master socket");
 
 
@@ -167,7 +168,7 @@ void *mainThread(void *argv) {
         max_sd = -1;
 
         // Add all valid socket to socket set
-        for (int i = 0; i < MAX_PLAYER; ++i)
+        for (int i = 0; i < MAX_PLAYER+1; ++i)
         {
             if (clientFds[i] == -1)
                 continue;
@@ -226,7 +227,7 @@ void *mainThread(void *argv) {
                 write(1, "Successfully connected!\n", 24);
 
                 // Add the new socket to our player list
-                for (int i = 0; i < MAX_PLAYER; ++i)
+                for (int i = 0; i < MAX_PLAYER+1; ++i)
                 {
                     if (clientFds[i] == -1)
                     {
@@ -246,7 +247,7 @@ void *mainThread(void *argv) {
         else
         {
             // If something happens on another socket => player send new signal
-            for (int i = 0; i < MAX_PLAYER; ++i)
+            for (int i = 0; i < MAX_PLAYER+1; ++i)
             {
                 if (clientFds[i] == -1)
                     continue;
@@ -381,43 +382,15 @@ int main(int argc, char **argv) {
             // connectToRoomNetwork(myRoom, &clientFds);
         }
 
-        char **hostIPs = NULL;
-        char **roomNames = NULL;
-        discorverRoom(&hostIPs, &roomNames);
-//        fputs(hostIPs[0], stdout);
-//        int sock = socket(AF_INET, SOCK_DGRAM, 0);
-//        struct sockaddr_in servaddr;
-//        memset(&servaddr, 0, sizeof(servaddr));
-//        servaddr.sin_family = AF_INET;
-//        servaddr.sin_addr.s_addr = inet_addr("172.20.10.6");
-//        servaddr.sin_port = htons(12345);
-//        char* message = "?DiscoverRoom\0";
-//        if (sendto(sock, message, strlen(message), 0, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-//            perror("Failed sending broadcast message");
-//            close(sock);
-//            return -1;
-//        } else {
-//            fputs("Successfully sent\n", stdout);
-//        }
-//        char *buffer_1 = malloc(64);
-//        socklen_t servaddr_length = sizeof(servaddr);
-//        if (recvfrom(sock, buffer_1, 63, 0, (struct sockaddr *)&servaddr, &servaddr_length) < 0) {
-//            return -1;
-//        } else {
-//            fputs(buffer_1, stdout);
-//        }
-
-        return 0;
-
         // ++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
         int opt = 1;
-        // The main socket of this client
 
+        // The main socket of this client
         int master_socket;
 
         // Initialize all other players
-        for (int i = 0; i < MAX_PLAYER; ++i)
+        for (int i = 0; i < MAX_PLAYER+1; ++i)
         {
             clientFds[i] = -1;
         }
@@ -448,26 +421,13 @@ int main(int argc, char **argv) {
         if (bind(master_socket, (const struct sockaddr *)(&address), sizeof(address)) < 0)
             stop("Error binding on master socket");
 
-        if (listen(master_socket, MAX_PLAYER) < 0)
+        if (listen(master_socket, MAX_PLAYER+1) < 0)
             stop("Error listening on master socket");
 
         write(1, "Waiting for connection ...\n", 27);
 
         while (1) // The main loop of program
         {
-            //            // +++ receive from game +++ //
-            //            msg message;
-            //
-            //            // +++ prepare message to send to another player +++ //
-            //            int network_msg_length = sizeof(message.msg_text);
-            //            char *network_msg = malloc(network_msg_length+1);
-            //            strncpy(network_msg, message.msg_text, network_msg_length);
-            //            network_msg[network_msg_length] = '\0';
-            //
-            //            if (recvFromGame(&message) < 0) {
-            //                write(1, "ERROR receiving from Python\n", 28);
-            //            }
-
             // Clear the socket set
             FD_ZERO(&readfds);
 
@@ -477,7 +437,7 @@ int main(int argc, char **argv) {
             max_sd = master_socket;
 
             // Add all valid socket to socket set
-            for (int i = 0; i < MAX_PLAYER; ++i)
+            for (int i = 0; i < MAX_PLAYER+1; ++i)
             {
                 if (clientFds[i] == -1)
                     continue;
@@ -485,9 +445,6 @@ int main(int argc, char **argv) {
                 if (sd > 0)
                 {
                     FD_SET(sd, &readfds);
-
-                    // If socket_fd is positive, then the client is valid
-                    //                    send_msg(*clients[i], network_msg);
                 }
                 if (sd > max_sd)
                     max_sd = sd;
@@ -524,12 +481,13 @@ int main(int argc, char **argv) {
 
                     // +++ Initialize new client +++ //
                     Player newPlayer = initPlayer(new_ip_addr, new_name);
+                    addPlayer(&myRoom, &newPlayer);
 
                     // Greeting message for joining the room
                     write(1, "Successfully connected!\n", 24);
 
                     // Add the new socket to our player list
-                    for (int i = 0; i < MAX_PLAYER; ++i)
+                    for (int i = 0; i < MAX_PLAYER+1; ++i)
                     {
                         if (clientFds[i] == -1)
                         {
@@ -537,14 +495,12 @@ int main(int argc, char **argv) {
                             break;
                         }
                     }
-
-                    // Send the room information to the new player
                 }
             }
             else
             {
                 // If something happens on another socket => player send new signal
-                for (int i = 0; i < MAX_PLAYER; ++i)
+                for (int i = 0; i < MAX_PLAYER+1; ++i)
                 {
                     if (clientFds[i] == -1)
                         continue;
@@ -552,7 +508,6 @@ int main(int argc, char **argv) {
                     if (FD_ISSET(sd, &readfds))
                     {
                         char *buffer = malloc(1024);
-                        msg message;
                         int val_recv;
                         if ((val_recv = recv(clientFds[i], buffer, 1023, 0)) < 0)
                         {
@@ -564,8 +519,8 @@ int main(int argc, char **argv) {
                             strncpy(message.msg_text, buffer, val_recv);
                             message.msg_text[val_recv] = '\0';
                             fputs(message.msg_text, stdout);
-                            //                            sendToGame(message);
                         }
+                        free(buffer);
                     }
                 }
             }

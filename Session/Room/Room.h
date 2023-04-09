@@ -12,14 +12,13 @@
 
 #include "../Player/Player.h"
 
-typedef struct {
-    char* name; // name of room
-    int maxPlayer; // maximun number of players in room
+typedef struct
+{
+    char *name;        // name of room
+    int maxPlayer;     // maximun number of players in room
     int currentNumber; // current number of players in room
-    Player *players; // array of all players in room
+    Player *players;   // array of all players in room
 } Room;
-
-
 
 int isFull(Room room);
 
@@ -37,6 +36,7 @@ int sendRoomIn4(int newPlayerSocketFd, Room room);
 
 void addPlayer(Room *room, Player *newPlayer);
 
-int sendGameStateToNewPlayer(char *encodedGameState, int newPlayerSocketFd);
+int sendGameStateToNewPlayer(char *filePath, int newPlayerSocketFd);
+int requestGameState(int msgid, char *filePath);
 
 #endif /* Session_h */

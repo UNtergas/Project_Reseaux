@@ -71,15 +71,21 @@ class Game():
 
 
 """
+
+
+from IPC import IPC
 import pygame
-SCREENSIZE = WIDTH, HEIGHT = 1200, 760
+import os
+import sys
+from StackFunc import FunctionQueue
+SCREENSIZE = WIDTH, HEIGHT = 800, 600
 
 
 class Game():
     def __init__(self, save):
         pygame.init()
-        # self.screen = pygame.display.set_mode(SCREENSIZE)
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode(SCREENSIZE)
+        # self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
         self.screen_width, self.screen_height = self.screen.get_size()
 
