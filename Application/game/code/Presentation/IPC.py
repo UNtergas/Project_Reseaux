@@ -1,5 +1,5 @@
 # This IPC module is use to communicate with network process
-
+import socket
 # import sysv_ipc
 # from dotenv import load_dotenv
 import os
@@ -10,20 +10,25 @@ import os
 
 
 class IPC:
-    def __init__(self) -> None:
-        self.key = os.getenv("IPC_KEY")
-        self.messageQueue = sysv_ipc.MessageQueue(self.key, sysv_ipc.IPC_CREAT)
+    def __init__(self, socket: socket.socket) -> None:
+        self.socket = socket
 
-    # The function @sendToNetwork is used to send a message to the network process
-    def sendToNetwork(self, message: str) -> int:
-        # +++ YOUR CODE HERE +++ #
-        pass
+    def connectToNetwork(self):
+        self.socket.connect("127.0.0.1", 12345)
 
-    # The function @receiveFromNetwork is used to receive a message from the network process
-    def receiveFromNetwork(self, IO):
-        # +++ YOUR CODE HERE +++ #
-        # IO.inputStack.append(str)
-        pass
+    def sendToSocket(self, message: str) -> int:
+        if self.socket != None:
+            try:
+                self.socket.sendall(("fr:Game "+message).encode('utf-8'))
+            except BlockingIOError :
+                pass
 
-    def processMessage(self):
-        pass
+    def recvFromSocket(self):
+        if self.socket != None:
+            try:
+                data = self.socket.recv(369369)
+                if data is not None:
+                    return data.decode('utf-8')
+                return None
+            except BlockingIOError:
+                return None

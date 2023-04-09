@@ -21,7 +21,7 @@
 #include <pthread.h>
 
 #include "Support/Support.h"
-#include "../Session/Session/Room.h"
+#include "../Session/Room/Room.h"
 #include "IPC_Interface/Message/msg.h"
 #include "MSGCode/MSGCode.h"
 
@@ -199,30 +199,6 @@ void *mainThread(void *argv) {
             }
             else
             {
-                // +++ Get the IP of new connection +++ //
-                char *new_ip_addr = malloc(INET_ADDRSTRLEN);
-                inet_ntop(AF_INET, &client_addr.sin_addr, new_ip_addr, INET_ADDRSTRLEN);
-
-                // +++ Get the username of new connection +++ //
-                // Read the destination message
-                memset(buffer, 0, BUFFLEN);
-                valread = recv(new_socket, buffer, BUFFLEN - 1, 0);
-                buffer[valread] = '\0';
-
-                char *new_name = NULL;
-                // Decode destination message
-                if (strncmp(buffer, "username: ", 10) == 0)
-                {
-                    new_name = malloc(valread - 10);
-                    strncpy(new_name, buffer + 10, valread - 10);
-                }
-
-                // +++ Initialize new player +++ //
-                Player newPlayer = initPlayer(new_ip_addr, new_name);
-
-                // add player to the room
-                addPlayer(&myRoom, &newPlayer);
-
                 // Greeting message for joining the room
                 write(1, "Successfully connected!\n", 24);
 
@@ -232,15 +208,41 @@ void *mainThread(void *argv) {
                     if (clientFds[i] == -1)
                     {
                         clientFds[i] = new_socket;
+                        if (i != 1) {
+                            // +++ Get the IP of new connection +++ //
+                            char *new_ip_addr = malloc(INET_ADDRSTRLEN);
+                            inet_ntop(AF_INET, &client_addr.sin_addr, new_ip_addr, INET_ADDRSTRLEN);
+
+                            // +++ Get the username of new connection +++ //
+                            // Read the destination message
+                            memset(buffer, 0, BUFFLEN);
+                            valread = recv(new_socket, buffer, BUFFLEN - 1, 0);
+                            buffer[valread] = '\0';
+
+                            char *new_name = NULL;
+                            // Decode destination message
+                            if (strncmp(buffer, "username: ", 10) == 0)
+                            {
+                                new_name = malloc(valread - 10);
+                                strncpy(new_name, buffer + 10, valread - 10);
+                            }
+                            
+                            // +++ Initialize new player +++ //
+                            Player newPlayer = initPlayer(new_ip_addr, new_name);
+
+                            // add player to the room
+                            addPlayer(&myRoom, &newPlayer);
+                            // Send the room information to the new player
+                            char *room_in4 = malloc(4096);
+                            roomToStr(myRoom, room_in4);
+
+                            send(new_socket, room_in4, strlen(room_in4), 0);
+                        }
                         break;
                     }
                 }
 
-                // Send the room information to the new player
-                char *room_in4 = malloc(4096);
-                roomToStr(myRoom, room_in4);
-
-                send(new_socket, room_in4, strlen(room_in4), 0);
+                
             }
             
         }
@@ -254,13 +256,31 @@ void *mainThread(void *argv) {
                 sd = clientFds[i];
                 if (FD_ISSET(sd, &readfds))
                 {
-                    // char *buffer = malloc(1024);
-                    // if ((valread = recv(sd, buffer, 1023, 0)) == 0) {
-                    //     perror("ERROR reading");
-                    //     exit(EXIT_FAILURE);
-                    // }
-                    // buffer[valread] = '\0';
-                    // fputs(buffer, stdout);
+                    char *buffer = malloc(369369);
+                    if ((valread = recv(sd, buffer, 1023, 0)) == 0) {
+                        perror("ERROR reading");
+                        exit(EXIT_FAILURE);
+                    }
+                    buffer[valread] = '\0';
+                    if (strncmp(buffer, "fr:Game ", 8) == 0) {
+                        int tmp_sd;
+                        for (int j=1; j<MAX_PLAYER+1; ++j) {
+                            if (clientFds[j] == -1) continue;
+                            tmp_sd = clientFds[j];
+                            
+                            send(tmp_sd, buffer, strlen(buffer), 0);
+
+                            
+                            int fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND);
+                            write(fd, "\n\n\n", 3);
+                            write(fd, buffer, strlen(buffer));
+                            close(fd);
+
+                            memset(buffer, 0, 369369);
+                        }
+                    } else {
+                        send(clientFds[1], buffer, strlen(buffer), 0);
+                    }
                     // msg message;
                     // int val_recv;
                 }
@@ -516,11 +536,9 @@ int main(int argc, char **argv) {
                         }
                         else
                         {
-                            strncpy(message.msg_text, buffer, val_recv);
-                            message.msg_text[val_recv] = '\0';
-                            fputs(message.msg_text, stdout);
+                            write(1, buffer, val_recv);
                         }
-                        free(buffer);
+                        // free(buffer);
                     }
                 }
             }

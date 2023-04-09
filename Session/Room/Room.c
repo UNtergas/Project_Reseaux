@@ -99,7 +99,7 @@ int joinRoom(char *hostIPaddr, char *roomName)
     // Step 4: decode response message
     // Step 5: call @connectToRoomNetwork function to connect with the rest of room
 
-
+}
 // The function @connectToRoomNetwork is used to connect to the rest of room (except host)
 // The purpose is create a P2P network in room
 // @parameters: {

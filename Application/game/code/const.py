@@ -2,6 +2,9 @@
 import pygame
 pygame.init()
 
+SERVER_ADDRESS = "127.0.0.1"
+SERVER_PORT = 12345
+
 # font scene Pre_Menu
 font0 = pygame.font.SysFont('JSL ANCIENT', 24, True)
 # font scene Menu

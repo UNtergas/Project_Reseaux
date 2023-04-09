@@ -1,7 +1,5 @@
 import socket
-# from const import SERVER_ADDRESS, SERVER_PORT
-SERVER_ADDRESS = "127.0.0.1"
-SERVER_PORT = 12345
+from const import SERVER_ADDRESS, SERVER_PORT
 import subprocess
 import errno
 import time
@@ -40,10 +38,12 @@ def createRoom(roomName: str, hostName: str):
     process = subprocess.Popen([executablePath+'app', '1', roomName,
                                hostName], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # s.setblocking(0)
-    # try:
     time.sleep(1)
-    s.connect((SERVER_ADDRESS, SERVER_PORT))
+    try:
+        s.connect(('127.0.01',12345))
+
+    except socket.error.errno:
+        pass
     print('socket connect success')
     s.setblocking(0)
     return s
@@ -54,15 +54,11 @@ def createRoom(roomName: str, hostName: str):
     #     # raise Exception(socket.error.errno)
     #     return None
 
-    # call main.c
-    # argv[1] : mode, argv[2] : roomName, argv[3] : playerName
-
 
 def join(hostIP: str, playerName: str):
     subprocess.run([executablePath+'app', '2', hostIP, playerName])
-    time.sleep(1)
+    time.sleep(10)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setblocking(0)
     s.connect((SERVER_ADDRESS, SERVER_PORT))
     return s
-    # call main.c

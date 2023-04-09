@@ -6,10 +6,11 @@ from const import MAP_SIZE
 from Building import *
 from Walker import *
 from GameIO import IO
+import socket
 
 
 class Save():
-    def __init__(self, name):
+    def __init__(self, name, socket: socket.socket):
         # NOTE : Carte temporaire
         self.map = Buildings()
         self.init()
@@ -26,8 +27,7 @@ class Save():
         self.road_system = [
             [False] * MAP_SIZE[0] for _ in range(MAP_SIZE[1])]
 
-        self.function_queue = FunctionQueue()
-        self.IO = IO()
+        self.IO = IO(socket=socket)
 
     def init(self):
         for x in range(MAP_SIZE[0]):

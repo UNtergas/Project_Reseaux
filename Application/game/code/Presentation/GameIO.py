@@ -4,7 +4,6 @@ import json
 import socket
 from World import World
 import errno
-PORT = 8000
 # Class action is the model of game action.
 # An action is an input from player (user)
 
@@ -13,14 +12,14 @@ PORT = 8000
 # It plays the role of processing the output from game (application layer) to network (session layer)
 # and processing the input from the network (session layer) to game (application layer)
 class IO:
-    def __init__(self, socket) -> None:
+    def __init__(self, socket: socket.socket) -> None:
         # The stack used for storing the input from the network (list of Actions)
         self.inputStack = None
         # The stack used for storing the output from the game (list of Actions)
         self.outputStack = None
         self.funcStack = FunctionQueue()
-        self.ipc = IPC()
-        self.socket = socket
+        self.ipc = IPC(socket=socket)
+        
     # Private method @_actionToStr is used to encode an action to a string. It help to transmit in4 in the network
     # @parameters: {
     #   @self: This class (not used)
@@ -34,25 +33,6 @@ class IO:
     #   @encodedAction: The string - the encoding version of action
     # }
     # @return: an object of class Action (an action)
-    def connectSocket(self, addr):
-        self.socket.connect()
-
-    def sendtoSocket(self, message: str) -> int:
-        if self.socket != None:
-            try:
-                self.socket.sendall(message.encode('utf-8'))
-            except BlockingIOError as e:
-                pass
-
-    def recvfromSocket(self):
-        if self.socket != None:
-            try:
-                data = self.socket.recv(369369)
-                if data is not None:
-                    return data.decode('utf-8')
-                return None
-            except BlockingIOError:
-                return None
 
     def _tempToStr(self, temp):
         del temp['image']
@@ -94,7 +74,7 @@ class IO:
         # Step 1: Encode all action in @self.outputStack
         temp = self._tempToStr(temp)
         mesg = {"type": action, "temp": temp, "timestamp": timestamp}
-        self.sendtoSocket(json.dumps(mesg))
+        self.ipc.sendtoSocket(json.dumps(mesg))
         # self.ipc.sendToNetwork(json.dumps(mesg))
 
         # Step 2: Send the encoded message using @self.IPC
@@ -116,7 +96,6 @@ class IO:
         # Step 1: Receive all action from @self.IPC
         # Step 2: Decode string message into a list of actions
         # Step 3: push them onto the inputStack
-        # +++ YOUR CODE HERE +++ #
 
 
 class FunctionQueue:
@@ -129,8 +108,9 @@ class FunctionQueue:
         self.queue.append((timestamp, func, args, kwargs))
 
     def execute(self):
-        self.queue.sort()
-        for timestamp, func, args, kwargs in self.queue:
-            if func != None:
-                func(*args, **kwargs)
-                self.queue.remove((timestamp, func, args, kwargs))
+        if self.queue != None:
+            self.queue.sort()
+            for timestamp, func, args, kwargs in self.queue:
+                if func != None:
+                    func(*args, **kwargs)
+                    self.queue.remove((timestamp, func, args, kwargs))
