@@ -23,7 +23,6 @@ typedef struct
 int recvFromGame(int msgid, msg **message);
 int sendToGame(int msgid, msg message);
 
-int requestGameState(int msgid, char *filepath);
 int sendGameState(int msgid, char *encodedGameState);
 
 #endif /* msg_h */

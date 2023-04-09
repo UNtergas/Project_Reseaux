@@ -9,7 +9,7 @@
 #define MSGCode_h
 
 #include <stdio.h>
-#include "../../Session/Session/Room.h"
+#include "../../Session/Room/Room.h"
 
 int roomToStr(Room room, char *buffer); // This function is used to encode room in4 to a string
 int strToRoom(char *buffer, Room *room); // This function is used to decode string to room in4
