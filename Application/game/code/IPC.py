@@ -23,7 +23,6 @@ class IPC:
     # The function @sendToNetwork is used to send a message to the network process
 
     def sendToNetwork(self, message: str) -> int:
-        # +++ YOUR CODE HERE +++ #
         try:
             self.messageQueue.send(message.encode(
                 'utf-8'), block=False, type=self.type_send)
@@ -32,7 +31,6 @@ class IPC:
 
     # The function @receiveFromNetwork is used to receive a message from the network process
     def receiveFromNetwork(self):
-        # +++ YOUR CODE HERE +++ #
         try:
             self.mesg, mesg_type = self.messageQueue.receive(
                 block=False, type=self.type_get)
