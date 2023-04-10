@@ -57,8 +57,8 @@ def SceneEventHandler(self, event):
     if event.type == event_types["LaunchGame"]:
         rooms = getAvailableRoom()
         for room in rooms:
-            if room["roomName"] == event.room_name:
-                join(room["hostIP"], event.player_name)
+            if room["roomName"] == self.box["namebox"].text:
+                join(room["hostIP"], self.box["namebox"].text)
             break
         self.game.save = Save(event.room_name)
         self.game.switchScene(SCENE_GAME_ID)
