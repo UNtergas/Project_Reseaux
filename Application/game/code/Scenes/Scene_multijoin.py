@@ -189,34 +189,3 @@ def SceneEventHandler(self, event):
 SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multicreate', createFunc=SceneMultiCreate,
               runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
 """
-
-"""import pygame as py
-from multiplayer import multi
-from const import font1, font_button
-from Button import *
-from Inputbox import InputBox
-from Scene_ids import *
-from Scene import *
-
-
-def SceneRoomCreate(self):
-    pass
-    # if (createroom(self.box['room'], playerName)) self.game.switchScene(SCENE_GAME_ID)
-    # # rappeller function createRoom(roomName, playerName)
-    # # avec success,  switch to game
-
-
-def SceneMultiRun(self):
-    pass
-    # draw Scene ici
-
-
-def SceneEventHandler(self, event):
-    pass
-    # if event.type == event_types["CreateRoom"]:
-    #     RoomCreate(self.playerName)
-
-
-SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multijoin', createFunc=SceneMultiCreate,
-              runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
-"""
