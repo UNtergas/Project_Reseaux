@@ -256,13 +256,13 @@ void *mainThread(void *argv) {
                 sd = clientFds[i];
                 if (FD_ISSET(sd, &readfds))
                 {
-                    char *buffer = malloc(369369);
+                    char *buffer = malloc(1024);
                     if ((valread = recv(sd, buffer, 1023, 0)) == 0) {
                         perror("ERROR reading");
                         exit(EXIT_FAILURE);
                     }
                     buffer[valread] = '\0';
-                    if (strncmp(buffer, "fr:Game ", 8) == 0) {
+                    if (i == 1) {
                         int tmp_sd;
                         for (int j=1; j<MAX_PLAYER+1; ++j) {
                             if (clientFds[j] == -1) continue;
@@ -276,7 +276,7 @@ void *mainThread(void *argv) {
                             write(fd, buffer, strlen(buffer));
                             close(fd);
 
-                            memset(buffer, 0, 369369);
+                            memset(buffer, 0, 1024);
                         }
                     } else {
                         send(clientFds[1], buffer, strlen(buffer), 0);
@@ -338,6 +338,8 @@ int main(int argc, char **argv) {
 
     else
     {
+        clientFds = (int*)malloc((MAX_PLAYER+1) * sizeof(int));
+
         // mode = 2 => join room
         char *host_ip_addr = argv[2];
         // resolveRoomToIP(roomName, &host_ip_addr);
@@ -367,6 +369,7 @@ int main(int argc, char **argv) {
             exit(1);
         }
         write(1, "Successfully connected to the room\n", 35);
+        clientFds[1] = first_socket;
 
         // Get the username of user
         char *username = argv[3];
@@ -457,7 +460,7 @@ int main(int argc, char **argv) {
             max_sd = master_socket;
 
             // Add all valid socket to socket set
-            for (int i = 0; i < MAX_PLAYER+1; ++i)
+            for (int i = 1; i < MAX_PLAYER+1; ++i)
             {
                 if (clientFds[i] == -1)
                     continue;
@@ -482,36 +485,49 @@ int main(int argc, char **argv) {
                     continue;
                 }
                 else {
-                    // +++ Get the IP of new connection +++ //
-                    char *new_ip_addr = malloc(INET_ADDRSTRLEN);
-                    inet_ntop(AF_INET, &(address.sin_addr), new_ip_addr, INET_ADDRSTRLEN);
-
-                    // +++ Get the username of new connection +++ //
-                    // Read the destination message
-                    memset(buffer, 0, BUFFLEN);
-                    valread = recv(new_socket, buffer, BUFFLEN - 1, 0);
-                    buffer[valread - 2] = '\0';
-                    char *new_name = NULL;
-                    // Decode destination message
-                    if (strncmp(buffer, "username: ", 10) == 0)
-                    {
-                        new_name = malloc(valread - 10);
-                        strncpy(new_name, buffer + 10, valread - 10);
-                    }
-
-                    // +++ Initialize new client +++ //
-                    Player newPlayer = initPlayer(new_ip_addr, new_name);
-                    addPlayer(&myRoom, &newPlayer);
-
-                    // Greeting message for joining the room
-                    write(1, "Successfully connected!\n", 24);
-
                     // Add the new socket to our player list
                     for (int i = 0; i < MAX_PLAYER+1; ++i)
                     {
                         if (clientFds[i] == -1)
                         {
-                            clientFds[i] = new_socket;
+                            // +++ Get the IP of new connection +++ //
+                            char *new_ip_addr = malloc(INET_ADDRSTRLEN);
+                            inet_ntop(AF_INET, &address.sin_addr, new_ip_addr, INET_ADDRSTRLEN);
+                            if (i == 0) {
+                                if (strncmp(new_ip_addr, "127.0.0.1", 9) == 0) {
+                                    clientFds[i] = new_socket;
+                                } else {
+                                    continue;
+                                }
+                            } else {
+                                clientFds[i] = new_socket;
+                            }
+                            if (i != 0) {
+                                // +++ Get the username of new connection +++ //
+                                // Read the destination message
+                                memset(buffer, 0, BUFFLEN);
+                                valread = recv(new_socket, buffer, BUFFLEN - 1, 0);
+                                buffer[valread] = '\0';
+
+                                char *new_name = NULL;
+                                // Decode destination message
+                                if (strncmp(buffer, "username: ", 10) == 0)
+                                {
+                                    new_name = malloc(valread - 10);
+                                    strncpy(new_name, buffer + 10, valread - 10);
+                                }
+                                
+                                // +++ Initialize new player +++ //
+                                Player newPlayer = initPlayer(new_ip_addr, new_name);
+
+                                // add player to the room
+                                addPlayer(&myRoom, &newPlayer);
+                                // Send the room information to the new player
+                                char *room_in4 = malloc(4096);
+                                roomToStr(myRoom, room_in4);
+
+                                send(new_socket, room_in4, strlen(room_in4), 0);
+                            }
                             break;
                         }
                     }
@@ -527,18 +543,33 @@ int main(int argc, char **argv) {
                     sd = clientFds[i];
                     if (FD_ISSET(sd, &readfds))
                     {
-                        char *buffer = malloc(1024);
-                        int val_recv;
-                        if ((val_recv = recv(clientFds[i], buffer, 1023, 0)) < 0)
-                        {
-                            write(1, "cannot receive message from network\n", 36);
-                            continue;
+                        char *buffer = malloc(369369);
+                        if ((valread = recv(sd, buffer, 369369, 0)) == 0) {
+                            perror("ERROR reading");
+                            exit(EXIT_FAILURE);
                         }
-                        else
-                        {
-                            write(1, buffer, val_recv);
+                        buffer[valread] = '\0';
+                        if (i == 0) {
+                            int tmp_sd;
+                            for (int j=1; j<MAX_PLAYER+1; ++j) {
+                                if (clientFds[j] == -1) continue;
+                                tmp_sd = clientFds[j];
+                                
+                                send(tmp_sd, buffer, strlen(buffer), 0);
+
+                                
+                                int fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND);
+                                write(fd, "\n\n\n", 3);
+                                write(fd, buffer, strlen(buffer));
+                                close(fd);
+
+                                memset(buffer, 0, 369369);
+                            }
+                        } else {
+                            send(clientFds[0], buffer, strlen(buffer), 0);
                         }
-                        // free(buffer);
+                        // msg message;
+                        // int val_recv;
                     }
                 }
             }

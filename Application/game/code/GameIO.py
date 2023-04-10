@@ -4,6 +4,7 @@ import json
 import socket
 from World import World
 import errno
+import re
 
 # Class action is the model of game action.
 # An action is an input from player (user)
@@ -28,9 +29,10 @@ class Action:
 # what is this error?
         
 
-    def execute(self):
-        func = self.func
-        func(*self.args,**self.kwargs)
+    # def execute(self):
+    #     func = self.func
+        
+    #     func(*self.args,**self.kwargs)
 
 
 # Class IO is the representation of presentation layer.
@@ -42,7 +44,7 @@ class IO:
         self.inputStack = []
         # The stack used for storing the output from the game (list of Actions)
         self.ipc = IPC(socket)
-
+        self.mesg= None
         
     # Private method @_actionToStr is used to encode an action to a string. It help to transmit in4 in the network
     # @parameters: {
@@ -63,7 +65,7 @@ class IO:
         return json.dumps(temp)
 
     def _strToAction(self, game, encodedAction):
-        print("incomingIn4: "+ encodedAction)
+        # print("incomingIn4: "+ encodedAction)
     
         if (encodedAction is not None):  
             encodedAction = json.loads(encodedAction)
@@ -97,7 +99,7 @@ class IO:
         # Step 1: Encode all action in @self.outputStack
         temp = self._tempToStr(temp) if (temp is not None) else ''
         mesg = {"type": action, "temp": temp, "timestamp": timestamp}
-        self.ipc.sendToNetwork("fr:Game "+json.dumps(mesg))
+        self.ipc.sendToNetwork("PRE:"+json.dumps(mesg)+":POST")
 
     # Method @receiveActions is used to receive message from the other players and store in @self.inputStack
     # @parameters: {
@@ -106,20 +108,47 @@ class IO:
     # }
     # @return: 0 if successfully receive or -1 if not
     def listening(self, game):
-        mesg= self.ipc.receiveFromNetwork()
-
-        if (mesg):
-            mesg = mesg.split("fr:Game ")
-            mesg = mesg[1:]
-            for encodedAction in mesg:
+        mesg = self.ipc.receiveFromNetwork()
+        if mesg:
+            if not self.mesg:
+                self.mesg = mesg
+            else:
+                self.mesg =  self.mesg+ mesg
+            action_syntax =r'PRE:(.*?):POST'
+            actionlist=[]
+            while True:
+                result = self.extract_and_remove_action(action_syntax)
+                if result == None:
+                    break
+                actionlist.append(result)
+            # mesg = mesg.split("PRE:")[1:]
+            for encodedAction in actionlist:
+                # encodedAction = encodedAction[:-5]
                 action = self._strToAction(game,encodedAction)
                 self.inputStack.append(action)
-
-    def resolving(self):
-        if not self.inputStack:
-            self.inputStack.sort()
-            for action in self.inputStack:
+    def resolving(self):    
+        if self.inputStack:
+            print(self.inputStack)
+            sorted_stack= sorted(self.inputStack, key=lambda x: x.timestamp)
+            for action in sorted_stack:
                 if isinstance(action,Action):
-                    action.execute()
+                    action.func(*action.args,**action.kwargs)
                     self.inputStack.remove(action)
+
+
+
+    def extract_and_remove_action(self, action_syntax):
+        # Create a regex pattern for the action syntax
+        pattern = re.compile(action_syntax)
+        # Find all matches of the action syntax in the string
+        matches = pattern.search(self.mesg)
+        if matches:
+            # select 1st action to remove
+            action_to_return = matches.group(0)
+            # Remove the action from the string
+            self.mesg = self.mesg.replace(action_to_return, '', 1)
+            action_to_return = action_to_return[4:]
+            action_to_return = action_to_return[:-5]
+            return action_to_return
+        return None
 

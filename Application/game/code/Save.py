@@ -7,7 +7,7 @@ from Building import *
 from Walker import *
 from GameIO import IO
 import socket
-
+from StackFunc import FunctionQueue
 
 class Save():
     def __init__(self, name, socket: socket.socket):
@@ -28,6 +28,7 @@ class Save():
             [False] * MAP_SIZE[0] for _ in range(MAP_SIZE[1])]
 
         self.IO = IO(socket=socket)
+        self.function_queue= FunctionQueue()
 
     def init(self):
         for x in range(MAP_SIZE[0]):
