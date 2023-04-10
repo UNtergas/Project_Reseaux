@@ -49,13 +49,14 @@ def SceneMultiJoinRun(self):
 def SceneEventHandler(self, event):
     if event.type == event_types["LaunchGame"]:
         rooms = getAvailableRoom()
+        print(rooms)
         for room in rooms:
             if room["roomName"] == self.box["inputbox"].text:
-                join(room["hostIP"],'John')
+                s = join(room["hostIP"],'John')
+                self.game.save = Save(self.box["inputbox"].text, s)
+                self.game.switchScene(SCENE_GAME_ID)
+                self.box['inputbox'].text = ""
             break
-        self.game.save = Save(self.box["inputbox"].text)
-        self.game.switchScene(SCENE_GAME_ID)
-        self.box['inputbox'].text = ""
 
 
 # Create the scene object

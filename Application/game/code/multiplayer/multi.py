@@ -40,11 +40,10 @@ def createRoom(roomName: str, hostName: str):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     time.sleep(1)
     try:
-        s.connect(('127.0.01',12345))
+        s.connect(('127.0.01', 12345))
 
     except socket.error.errno:
         pass
-    print('socket connect success')
     s.setblocking(0)
     return s
     # except socket.error:
@@ -56,9 +55,12 @@ def createRoom(roomName: str, hostName: str):
 
 
 def join(hostIP: str, playerName: str):
-    subprocess.run([executablePath+'app', '2', hostIP, playerName])
-    time.sleep(10)
+    subprocess.Popen([executablePath+'app', '2', hostIP, playerName])
+    time.sleep(1)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect(('127.0.0.1', 12345))
+    except socket.error.errno:
+        print("ERROR: cannot connect")
     s.setblocking(0)
-    s.connect((SERVER_ADDRESS, SERVER_PORT))
     return s

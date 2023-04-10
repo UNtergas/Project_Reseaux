@@ -52,7 +52,7 @@ void *sendDiscoveringMessageThread(void *arg) {
         memset(&servaddr, 0, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
         servaddr.sin_addr.s_addr = inet_addr(ip);
-        servaddr.sin_port = htons(12345);
+        servaddr.sin_port = htons(54321);
         socklen_t serv_length = sizeof(servaddr);
         
         
@@ -60,7 +60,7 @@ void *sendDiscoveringMessageThread(void *arg) {
         
         if (sendto(sock, message, strlen(message), 0, (struct sockaddr*)&servaddr, serv_length) < 0) {
             perror("Failed sending broadcast message");
-        }
+        } 
         close(sock);
     }
     free(ip);
@@ -90,7 +90,7 @@ void *receiveResponseThread(void *arg) {
     socklen_t serv_length = sizeof(servaddr);
     
     struct timeval tv;
-    tv.tv_sec = 5;
+    tv.tv_sec = 1;
     tv.tv_usec = 0;
     
     if (setsockopt(responseSocketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
@@ -104,17 +104,22 @@ void *receiveResponseThread(void *arg) {
     char buffer[64];
     
     for (int i=0; i<50; i++) {
-        if (recvfrom(responseSocketFd, buffer, 63, 0, (struct sockaddr*)&servaddr, &serv_length) < 0) {
+        int valread;
+        if ((valread = recvfrom(responseSocketFd, buffer, 63, 0, (struct sockaddr*)&servaddr, &serv_length)) < 0) {
             close(responseSocketFd);
             return NULL;;
         } else {
+            buffer[valread] = '\0';
             if (strncmp(buffer, "!Active", 7) == 0) {
                 // Receive IP adress
                 
                 char **result = NULL;
                 // Receive room name
                 split(buffer, " ", &result);
-                
+                int fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
+                write(fd, buffer, strlen(buffer));
+                write(fd, "\n", 1);
+                close(fd);
 
                 
                 for (int i=0; i<MAX_ROOMS; ++i) {
@@ -186,6 +191,7 @@ int discoverRoom(char*** hostIPs, char*** roomNames) {
             // If the interface is the loopback interface, ignore it
             if (strcmp(ifa->ifa_name, "lo0") == 0) continue;
 
+
             // Get the netmask for this interface
             struct sockaddr_in *mask = (struct sockaddr_in *)ifa->ifa_netmask;
 
@@ -203,24 +209,25 @@ int discoverRoom(char*** hostIPs, char*** roomNames) {
             if (pch != NULL) *pch = '\0';
             strcat(base_ip, ".");
 
-            break;
+            int fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
+            write(fd, base_ip, strlen(base_ip));
+            write(fd, "\n", 1);
+            close(fd);
+
+            pthread_t sendDiscoveringTid, receiveResponseTid;
+    
+            pthread_create(&sendDiscoveringTid, NULL, sendDiscoveringMessageThread, base_ip);
+
+            struct arg response = {hostIPs, roomNames};
+            pthread_create(&receiveResponseTid, NULL, receiveResponseThread, &response);
+
+            pthread_join(receiveResponseTid, NULL);
+            pthread_join(sendDiscoveringTid, NULL);
+
         }
     }
     freeifaddrs(ifaddr);
     
-    
-    pthread_t sendDiscoveringTid, receiveResponseTid;
-    
-    pthread_create(&sendDiscoveringTid, NULL, sendDiscoveringMessageThread, base_ip);
-    
-    struct arg response = {hostIPs, roomNames};
-    pthread_create(&receiveResponseTid, NULL, receiveResponseThread, &response);
-    
-    pthread_join(receiveResponseTid, NULL);
-    pthread_join(sendDiscoveringTid, NULL);
-    
-
-
     free(base_ip);
     free(netmask);
 
