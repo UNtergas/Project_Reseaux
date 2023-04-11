@@ -116,7 +116,8 @@ int connectToRoomNetwork(Room room, int *clientSocketFds) {
     // Step 5: write new created socket into *clientSocketFds
     if (clientSocketFds == NULL) return -1;
 
-    for (int i=1; i<room.currentNumber; ++i) { // the first person is exclusive cuz he is host
+    for (int i=2; i<room.currentNumber; ++i) { // the first person is exclusive cuz he is host, 2 is me
+        if (isNA(room.players[i])) break;
         int newSocketFd = socket(AF_INET, SOCK_STREAM, 0);
         if (newSocketFd < 0) return -1;
         // room's host
