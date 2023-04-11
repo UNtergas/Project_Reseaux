@@ -106,7 +106,7 @@ int joinRoom(char *hostIPaddr, char *roomName)
 //  @room: the room we want to connect to create a P2P network
 //  @clientSocketFds: the list of used to write the new sockets we will create into
 // }
-int connectToRoomNetwork(Room room, int **clientSocketFds) {
+int connectToRoomNetwork(Room room, int *clientSocketFds) {
     // Step 1: verify if @clientSocketFds is NULL, if yes => return -1
     // Step 2: verify if *clientSocketFds is NULL, if yes => allocate it as an array of @room.maxPlayer element
     // Step 3: check if the current number of players of rooms (@room.currentNumber) is 2 or not?
@@ -116,10 +116,21 @@ int connectToRoomNetwork(Room room, int **clientSocketFds) {
     // Step 5: write new created socket into *clientSocketFds
     if (clientSocketFds == NULL) return -1;
 
-    if (*clientSocketFds == NULL) clientSocketFds = malloc((room.maxPlayer+1)*sizeof(Player));
-
     for (int i=1; i<room.currentNumber; ++i) { // the first person is exclusive cuz he is host
+        int newSocketFd = socket(AF_INET, SOCK_STREAM, 0);
+        if (newSocketFd < 0) return -1;
+        // room's host
+        struct sockaddr_in player_addr;
+        player_addr.sin_family = AF_INET;
+        inet_pton(AF_INET, room.players[i].ipAddr, &(player_addr.sin_addr));
+        player_addr.sin_port = htons(12345);
 
+        if (connect(newSocketFd, (const struct sockaddr *)&player_addr, sizeof(player_addr)) < 0) return -1;
+        else {
+            for (int j=0; j<room.maxPlayer+1; ++j) {
+                if (clientSocketFds[j] == -1) clientSocketFds[j] = newSocketFd;
+            }
+        }
     }
 }
     
