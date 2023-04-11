@@ -41,51 +41,24 @@ chmod +400 lan/compile.sh
 
 ## TODO List
 ```
-Complete the following functions: 🔴
-# LAN Communication
-    createRoom ✅
-    destroyRoom 🔴
-    discoverRoom 🔴
-    joinRoom 🔴
-    sendRoomIn4 🔴
-    connectToRoomNetwork 🔴
-    sendGameStateToNewPlayer 🔴
 
-# IPC
-    # Class ICP
-    sendToNetwork 🔴
-    receiveFromNetwork 🔴
-    # Clas IO
-    execute 🔴
-    _actionToStr 🔴
-    _strToAction 🔴
-    sendActions 🔴
-    receiveAction 🔴
 
-# Multi-player Ingame Interface
-    Time variable : 🔴
-    save needed data into save.json : ✅
-    load json to game inter face :🔜
-    load action into data.json : 🔴
-    event listening on data.json : 🔴
-    Processing event based on time : 🔴
-    Priority of acion : 🔴
-    Conflict resolving : 🔴
-
-# Rapport
-    Intro
-    Method
-    Demo
-    Soutenance
 ```
 
 # Task for each person
 ```
-Yacine: Multi-player Scence (go to Application/code/Scenes/Scene_multi.py)
-Duke: IPC (go to Presentation/IO.py)
-Tuan: IPC (go to Presentation/IPC.py and IO.py)
-Khang: Session (go to Session/Room.c)
-Duy: Network 
-Phong: Multi-player logic (go to Application/multi)
+Yacine: Multi-player Scence (go to Application/code/Scenes/Scene_multi.py)✅
+Duke: IPC (go to Presentation/IO.py)✅
+Tuan: IPC (go to Presentation/IPC.py and IO.py)✅
+Khang: Session (go to Session/Room.c)🔜
+Duy: Network 🔜
+Phong: Multi-player logic (go to Application/multi)✅
+# Rapport
+
+[ ] Intro : Khang + Yacine 
+[ ] Method : Duy + Phong 
+[ ] Architecture Réseaux : Duke 
+[ ] Architecture Système : Tuan 
+[ ] Conclusion : Khang + Yacine 
 ```
 

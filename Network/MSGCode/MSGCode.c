@@ -29,27 +29,28 @@ int roomToStr(Room room, char *buffer) {
     sprintf(encodingStr, "name: %s\nmaxPlayer: %d\ncurrentNumber: %d\n", room.name, room.maxPlayer, room.currentNumber);
     encoded_msg_length += strlen(encodingStr);
 
+    char *player_in4 = NULL;
+    
     for (int i=0; i<room.maxPlayer; i++) {
         if (isNA(room.players[i])) break;
+
         
+
         // length of in4 of each player in room
         unsigned long player_in4_length = 11+strlen(room.players[i].ipAddr)+strlen(room.players[i].name);
 
-        char *player_in4 = malloc(player_in4_length+1);
-        sprintf(player_in4, "player: %s, %s", room.players[i].ipAddr, room.players[i].name);
+        player_in4 = malloc(player_in4_length+1);
+
+        sprintf(player_in4, "player: %s, %s\n", room.players[i].ipAddr, room.players[i].name);
         player_in4[player_in4_length] = '\0';
         
         // add to encoding message
         strncat(encodingStr, player_in4, strlen(player_in4));
-
         encoded_msg_length += player_in4_length;
-
+        free(player_in4);
     }
     encodingStr[encoded_msg_length] = '\0';
     
-    if (buffer == NULL) {
-        buffer = malloc(4096);
-    }
     strncpy(buffer, encodingStr, encoded_msg_length);
     buffer[encoded_msg_length] = '\0';
     return 0;
@@ -66,7 +67,8 @@ int strToRoom(char *buffer, Room *room) {
     char **decodingData;
     
     int num_token = split(buffer, "\n", &decodingData);
-    for (int i=0; i<num_token; ++i) {
+
+    for (int i=0; i<num_token-1; ++i) {
         char *token = decodingData[i];
         if (strncmp(token, "name: ", 6) == 0) {
             // Regconize room name
@@ -98,18 +100,23 @@ int strToRoom(char *buffer, Room *room) {
                 room->players = malloc(room->maxPlayer);
             }
             
+    
             char *rest = token+8;
             
             char **result = NULL;
             split(rest, ", ", &result);
 
-            room->players[count-3].ipAddr = result[0];
-            room->players[count-3].name = result[1];
+            int ipAddrLength = strlen(result[0]);
+            room->players[i-3].ipAddr = malloc(ipAddrLength+1);
+            strncpy(room->players[i-3].ipAddr, result[0], ipAddrLength);
+            room->players[i-3].ipAddr[ipAddrLength] = '\0';
             
-        }
+            int playerNameLength = strlen(result[1]);
+            room->players[i-3].name = malloc(playerNameLength+1);
+            strncpy(room->players[i-3].name, result[1], playerNameLength);
+            room->players[i-3].name[playerNameLength] = '\0';
 
-        count += 1;
-        token = strtok(NULL, "\n");
+        }
     }
     
     return 0;

@@ -24,27 +24,34 @@
 // threads lib
 #include <pthread.h>
 
-int sendToGame(int msgid, msg message) {
+int sendToGame(int msgid, msg message)
+{
     message.msg_type = 3; // 3 indicate C to Python
     // msgsnd to send message
-    if (msgsnd(msgid, &message, sizeof(message), 0) == -1) {
+    if (msgsnd(msgid, &message, sizeof(message), 0) == -1)
+    {
         write(1, "msgsnd failed\n", 14);
         return -1;
     }
     return 0;
 }
 
-int recvFromGame(int msgid, msg **message) {
-    if (message == NULL) {
+int recvFromGame(int msgid, msg **message)
+{
+    if (message == NULL)
+    {
         return -1;
-    } else if (*message == NULL) {
+    }
+    else if (*message == NULL)
+    {
         *message = malloc(sizeof(msg));
     }
-    
+
     (*message)->msg_type = 2; // 2 indicate Python to C
 
     // msgsnd to send message
-    if (msgrcv(msgid, (*message), sizeof(**message), (*message)->msg_type, 0) == -1) {
+    if (msgrcv(msgid, (*message), sizeof(**message), (*message)->msg_type, 0) == -1)
+    {
         write(1, "msgrcv failed\n", 14);
         return -1;
     }
@@ -58,25 +65,45 @@ int recvFromGame(int msgid, msg **message) {
 //  @results: used to write the result of game state request from game
 // }
 // @return: 0 if successfully request or -1 if not
-int requestGameState(int msgid, char** results) {
-    // Step 1: Send the request to game via msgid
-    //      The request has the form: "?GameState"
-    // Step 2: Wait for the response from game
-    // Step 3: Write into the results
-    //      Step 3.1: if results is NULL => return -1
-    //      Step 3.2: if *results is NULL => allocate *results
-    //      Step 3.3: write the results into results
+// int requestGameState(int msgid, char *filePath)
+// {
+//     // Step 1: Send the request to game via msgid
+//     //      The request has the form: "?GameState"
+//     // Step 2: Wait for the response from game
+//     // Step 3: Write into the results
+//     //      Step 3.1: if results is NULL => return -1
+//     //      Step 3.2: if *results is NULL => allocate *results
+//     //      Step 3.3: write the results into results
 
-    // +++ YOUR CODE HERE +++ //
-}
+//     // +++ YOUR CODE HERE +++ //
+//     FILE *fptr;
+//     msg requestPython = {C_TO_PY, "?GameState"};
+//     sprintf(requestPython.msg_text, "?GameState:%s", filePath);
+//     msg GameState = {PY_TO_C, NULL};
+//     if (msgsnd(msgid, &requestPython, sizeof(requestPython), 0) == -1)
+//     {
+//         printf("msgsnd ?GameState failed\n");
+//     }
+//     if (msgrcv(msgid, &GameState, sizeof(GameState), PY_TO_C, 0) == -1)
+//     {
+//         printf("msgrev GameState Failed\n");
+//     }
+//     if (strcmp(GameState.msg_text, "Done") == 0)
+//     {
+//         fptr = fopen(filePath, "r+");
+//         if (fptr == NULL)
+//         {
+//             return 0;
+//         }
+//     }
+//     return 1;
+// }
 
 // The function @sendGameState is used to send the game state to update current game
 // parameters: {
 //  @msgid: used to identify message queue
 //  @encodedGameState: the new game state used to update current game state
 // }
-int sendGameState(int msgid, char* encodedGameState) {
-    
+int sendGameState(int msgid, char *encodedGameState)
+{
 }
-
-

@@ -4,6 +4,7 @@ from Utils import mouse_is_on_map, mouse_to_grid, get_road_pathway, \
 from const import TILE_SIZE, TEMP_TILE, GRASS_IMAGE, JUST_A_BURNING_MEMORY, RUMBLE_OF_BUILDING, OVERLAY
 from Building import *
 import pygame
+import json
 
 
 class World:
@@ -64,7 +65,7 @@ class World:
         render = {"map": mapRender, "grid": gridRender}
         return render
 
-    def update(self, drag_start, drag_end, mouse_pos, mouse_action, camera, mini_map, H_R):
+    def update(self, drag_start, drag_end, mouse_pos, mouse_action, camera, mini_map, H_R, IO):
         drag_process = mouse_action[0]
         self.on_mouse_temp = None
         if not mouse_action[0] and self.temp_tile != []:
@@ -72,11 +73,18 @@ class World:
             for temp in self.temp_tile:
                 if temp is not None:
                     if temp["type"] in self.buildable:
-                        self.construction(temp, mini_map)
+                        IO.sendActions("contruction", temp)
+                        
+                        # IO.sendaction(contruction,temp)
+
+                        # function_queue.enqueue(ipc.sendToNetwork, None,)
+
                     elif temp["type"] == "shovel":
-                        self.destruction(temp, mini_map, H_R)
+                        IO.sendActions("destruction", temp)
+
                     elif temp["type"] == "road":
-                        self.cheminement(temp, mini_map)
+                        IO.sendActions("cheminement", temp)
+
             self.hud["main"].interaction = None
         self.temp_tile = []
         if self.hud["main"].interaction != None:
@@ -175,6 +183,7 @@ class World:
                 self.save.PO -= 4
 
     def construction(self, temp, mini_map):
+        print(temp)
         grid_pos = temp["grid"]
         collision = temp["collision"]
         if not collision:

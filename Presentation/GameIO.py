@@ -1,12 +1,15 @@
-from IPC import IPC
+from .IPC import IPC
 import json
 
-# Class action is the model of game action. 
+# Class action is the model of game action.
 # An action is an input from player (user)
+
+
 class Action:
-    def __init__(self, type, buildingRequirement) -> None:
-        self.type = type 
-        self.buildingRequirement = buildingRequirement
+    def __init__(self, func, temp) -> None:
+        self.func = func
+        self.temp = temp
+        self.IPC = IPC()
 
     # Method @execute is used to execute this action (@self) in the @game
     # @parameters: {
@@ -14,7 +17,7 @@ class Action:
     #   @game: The game that we want to execute this action in
     # }
     # @return: 0 if successfully insert to table or -1 if not
-    def execute(self, game) -> int: 
+    def execute(self, game) -> int:
         # execute @self in @game
         # +++ YOUR CODE HERE +++ #
         pass
@@ -25,10 +28,11 @@ class Action:
 # and processing the input from the network (session layer) to game (application layer)
 class IO:
     def __init__(self) -> None:
-        self.inputStack = None # The stack used for storing the input from the network (list of Actions)
-        self.outputStack = None # The stack used for storing the output from the game (list of Actions)
-        self.IPC = IPC()
-        
+        # The stack used for storing the input from the network (list of Actions)
+        self.inputStack = None
+        # The stack used for storing the output from the game (list of Actions)
+        self.outputStack = None
+
     # Private method @_actionToStr is used to encode an action to a string. It help to transmit in4 in the network
     # @parameters: {
     #   @self: This class (not used)
@@ -96,11 +100,4 @@ class IO:
             # Step 2: Decode string message into a list of actions
             # Step 3: push them onto the inputStack
             # +++ YOUR CODE HERE +++ #
-
-        # deu biet viet :V
-            
-
-    
-
-
-    
+        pass

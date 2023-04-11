@@ -1,59 +1,45 @@
 import pygame as py
 from multiplayer import multi
 from Scene import *
-from const import font1, font_button
+from const import *
 from Button import *
 from Inputbox import InputBox
 from Scenes.Scene_ids import *
+from Save import *
+from Utils import GenerateGridLayout
 
 
 def SceneMultiCreate(self):
-    self.playerName = None
-    self.box = {}
-    createRoom = Button(py.Rect(200, 350, 150, 50), "Create Room",
-                        font_button, None, event_types["CreateRoom"])
-    joinRoom = Button(py.Rect(450, 350, 150, 50), "Join Room",
-                      font_button, None, event_types["JoinRoom"])
-    back = Button(py.Rect(50, 550, 100, 50), "Back",
-                  font_button, switchScene, SCENE_MENU_ID)
-    self.buttons = [createRoom, joinRoom, back]
+    self.images["fond"] = pygame.image.load(
+        "assets/0_fired_00001.png").convert()
 
+    layout = GenerateGridLayout(
+        self.game.screen_width/2, self.game.screen_height/2, 1, 4, 0, 50, 300, 100)
 
-def RoomCreate(self, playerName: str):
-    success, room_id = multi.create_room(self.box['room'].text, playerName)
-    if success:
-        self.game.switchScene(SCENE_GAME_ID, room_id)
+    self.buttons["Create"] = Button_text(
+        *next(layout), 300, 100, lambda: self.game.switchScene(SCENE_MULTI_CREATE_ID), "Create room", font1)
 
+    self.buttons["Join"] = Button_text(
+        *next(layout), 300, 100, lambda: self.game.switchScene(SCENE_MULTI_JOIN_ID), "Join room", font1)
 
-def SceneMultiJoin(self):
-    # self.playerName = BOXES["playerName"].getText()
-    self.box = {}
-    joinRoom = Button(py.Rect(200, 350, 150, 50), "Join Room",
-                      font_button, None, event_types["JoinRoom"])
-    back = Button(py.Rect(50, 550, 100, 50), "Back",
-                  font_button, switchScene, SCENE_MENU_ID)
-    self.buttons = [joinRoom, back]
-
-
-def RoomJoin(self, playerName: str):
-    success, room_id = multi.join_room(self.box['room'].text, playerName)
-    if success:
-        self.game.switchScene(SCENE_GAME_ID, room_id)
+    self.buttons["button_menu"] = Button_text(
+        *next(layout), 300, 100, lambda: self.game.switchScene(SCENE_MENU_ID), "Exit", font1)
 
 
 def SceneMultiRun(self):
-    pass
+
+    pygame.time.Clock().tick(60)
+    self.game.screen.blit(pygame.transform.scale(
+        self.images["fond"], (self.game.screen_width, self.game.screen_height)), (0, 0))
+
+    for key in self.buttons.keys():
+        self.buttons[key].show(self.game.screen)
+
+    pygame.display.flip()
 
 
-def SceneEventHandler(self, event):
-    if event.type == event_types["CreateRoom"]:
-        RoomCreate(self, self.playerName)
-    elif event.type == event_types["JoinRoom"]:
-        RoomJoin(self, self.playerName)
-
-
-SCENE = Scene(SCENE_MULTI_ID, 'Scene_multi',
-              createFunc=SceneMultiCreate, runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
+SCENE = Scene(SCENE_MULTI_ID, 'Scene_Multi', createFunc=SceneMultiCreate,
+              runFunc=SceneMultiRun)
 
 
 """
@@ -89,3 +75,4 @@ def SceneEventHandler(self,event):
 
 SCENE = Scene(SCENE_MULTI_ID, 'Scene_multi', createFunc=SceneMultiCreate,
               runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
+"""

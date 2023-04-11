@@ -1,27 +1,102 @@
+from Scene import *
+import pygame
+from Button import *
+from Inputbox import InputBox
+from Save import *
+from const import *
+from .Scene_ids import *
+from multiplayer.multi import *
+
+
+def SceneMultiJoin(self):
+    self.images["fond"] = pygame.image.load(
+        "assets/01b_00001.png").convert()
+
+    self.box["inputbox"] = InputBox(
+        self.game.screen_width/2, self.game.screen_height/2-30, 600, 45, lambda: pygame.event.post(pygame.event.Event(
+            event_types["LaunchGame"], {"name": 1})), font2)
+
+    self.buttons['button_menu'] = Button_text(self.game.screen_width/2-150, self.game.screen_height /
+                                              2+50, 300, 100, lambda: self.game.switchScene(SCENE_MENU_ID), "Back to Menu")
+    self.buttons['join_button'] = Button_text(self.game.screen_width/2+150, self.game.screen_height /
+                                              2+50, 300, 100, lambda: pygame.event.post(pygame.event.Event(
+                                                  event_types["LaunchGame"], {"name": 1})), "Join your room")
+
+
+def SceneMultiJoinRun(self):
+
+    pygame.time.Clock().tick(60)
+
+    self.game.screen.blit(pygame.transform.scale(
+        self.images["fond"], (self.game.screen_width, self.game.screen_height)), (0, 0))
+
+    pygame.draw.rect(self.game.screen, (180, 180, 180),
+                     (self.game.screen_width/2-300, self.game.screen_height/2-100, 600, 175))
+
+    for key in self.box.keys():
+        self.box[key].show(self.game.screen)
+
+    for key in self.buttons.keys():
+        self.buttons[key].show(self.game.screen, False)
+
+    text = font1.render("Enter the name of your room", 1, (0, 0, 0))
+    self.game.screen.blit(text, (self.game.screen_width /
+                          2-text.get_width()/2, self.game.screen_height/2-100))
+
+    pygame.display.flip()
+
+
+def SceneEventHandler(self, event):
+    if event.type == event_types["LaunchGame"]:
+        rooms = getAvailableRoom()
+        print(rooms)
+        for room in rooms:
+            if room["roomName"] == self.box["inputbox"].text:
+                s = join(room["hostIP"],'John')
+                self.game.save = Save(self.box["inputbox"].text, s)
+                for i in range(100):
+                    if (self.game.save.IO.listenGameState()):
+                        print('Loading game......')
+                        # self.game.save.load('save')
+                        break                  
+                self.game.switchScene(SCENE_GAME_ID)
+                self.box['inputbox'].text = ""
+            break
+        
+
+
+# Create the scene object
+SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multicreate', createFunc=SceneMultiJoin,
+              runFunc=SceneMultiJoinRun, handleEventsFunc=SceneEventHandler)
+
+
+"""
 import pygame as py
 from multiplayer import multi
 from Scene import *
-from const import font1, font_button
+from const import *
 from Button import *
 from Inputbox import InputBox
 from Scenes.Scene_ids import *
+from Save import *
 
 
 def SceneMultiCreate(self):
     # Text and input for room name
     text = font1.render("Room name: ", True, (0, 0, 0))
     self.box = {}
-    self.box['room'] = InputBox(300, 350, 400, 50, text=text)
+    self.box['room'] = InputBox(
+        self.game.screen_width/2, self.game.screen_height/2-30, 600, 45, lambda: py.event.post(py.event.Event(
+            event_types["Create"], {"name": 1})), font2)
 
-    # Buttons for creating room and going back to menu
-    create_text = font_button.render("Create Room", True, (0, 0, 0))
-    self.create_button = Button(
-        300, 425, 150, 50, create_text, event_type=event_types['CreateRoom'])
-
+    # Buttons for joinning room and going back to menu
     back_text = font_button.render("Back", True, (0, 0, 0))
-    self.back_button = Button(
-        550, 425, 150, 50, back_text, switch_to_scene=SCENE_MENU_ID)
+    self.back_button = Button_text(
+        550, 425, 150, 50, lambda: self.game.switchScene(SCENE_MENU_ID), back_text)
 
+    self.buttons['join'] = Button_text(self.game.screen_width/2+150, self.game.screen_height /
+                                       2+50, 300, 100, lambda: pygame.event.post(pygame.event.Event(
+                                           event_types["JoinRoom"], {"name": 1})), "Join room")
     # Adding objects to the Scene object
     self.addObject(self.box['room'])
     self.addObject(self.create_button)
@@ -43,14 +118,12 @@ def SceneMultiRun(self):
 
 
 def SceneEventHandler(self, event):
-    # Handling events
-    if event.type == event_types["CreateRoom"]:
-        RoomCreate(self, self.playerName)
+    pass
 
 
 SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multicreate', createFunc=SceneMultiCreate,
-                           runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
-
+              runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
+"""
 
 """import pygame as py
 from multiplayer import multi
@@ -81,3 +154,4 @@ def SceneEventHandler(self, event):
 
 SCENE = Scene(SCENE_MULTI_JOIN_ID, 'Scene_multijoin', createFunc=SceneMultiCreate,
               runFunc=SceneMultiRun, handleEventsFunc=SceneEventHandler)
+"""

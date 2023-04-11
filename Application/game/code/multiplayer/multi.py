@@ -1,42 +1,66 @@
+import socket
+from const import SERVER_ADDRESS, SERVER_PORT
 import subprocess
-# from Presentation import IO
+import errno
+import time
+# from Presentation import GameIO as IO
+
 # The function @getAvailableRoom is used to get the available rooms from network module
 # @parameters: {
 #   None
 # }
 #
 
+executablePath = "./../../executable/"
+
 
 def getAvailableRoom():
-    # call main.c
-    # send request to main.c
-    # receive rooom list
-    return ['room 1', 'room 2', 'room 3']
+
+    def strToRoomIn4(rawStr: str):
+        arr = rawStr.split(": ")
+        return {
+            "roomName": arr[0],
+            "hostIP": arr[1]
+        }
+
+    result = subprocess.run(
+        [executablePath+'getAvailableRoom'], stdout=subprocess.PIPE)
+    result = result.stdout.decode('utf-8').split('\n')
+    result.pop()
+    rooms = None
+    if result != None:
+        rooms = list(map(strToRoomIn4, result))
+
+    return rooms
 
 
 def createRoom(roomName: str, hostName: str):
-    pass
-    result = subprocess.run(['./app', '1 room player'],
-                            capture_output=True, text=True)
-    # call main.c
-    # argv[1] : mode, argv[2] : roomName, argv[3] : playerName
+    process = subprocess.Popen([executablePath+'app', '1', roomName,
+                               hostName], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    time.sleep(1)
+    try:
+        s.connect(('127.0.0.1', 12345))
+
+    except socket.error.errno:
+        pass
+    s.setblocking(0)
+    return s
+    # except socket.error:
+    #     # # if socket.error.errno == errno.EINPROGRESS:
+    #     # #     return None
+    #     # # else:
+    #     # raise Exception(socket.error.errno)
+    #     return None
 
 
-def join(roomName: str, playerName: str):
-    pass
-    result = subprocess.run(['./app', '1 room player'],
-                            capture_output=True, text=True)
-    # call main.c
-
-
-def getPlayers():
-    pass
-
-# import subprocess
-
-# Run shell command
-# result = subprocess.run(['ls', '-l'], capture_output=True, text=True)
-
-# Print output
-# print(result.stdout)
-# print(result)
+def join(hostIP: str, playerName: str):
+    subprocess.Popen([executablePath+'app', '2', hostIP, playerName])
+    time.sleep(1)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect(('127.0.0.1', 12345))
+    except socket.error.errno:
+        print("ERROR: cannot connect")
+    s.setblocking(0)
+    return s
