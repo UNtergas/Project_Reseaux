@@ -15,7 +15,6 @@ class Action:
         self.timestamp = timestamp
         self.args = args
         self.kwargs = kwargs
-
 # ine 48, in handleEvents
 #     self.handleEventsFunc(self, event)
 #   File "/home/john/Desktop/Project_Reseaux/Application/game/code/Scenes/Scene_multicreate.py", line 54, in SceneEventHandler
@@ -43,6 +42,7 @@ class IO:
         # The stack used for storing the input from the network (list of Actions)
         self.inputStack = []
         # The stack used for storing the output from the game (list of Actions)
+        self.outputStack = []
         self.ipc = IPC(socket)
         self.mesg= None
         
@@ -66,11 +66,10 @@ class IO:
 
     def _strToAction(self, game, encodedAction):
         # print("incomingIn4: "+ encodedAction)
-    
-        if (encodedAction is not None):  
+        if (encodedAction is not None):
             encodedAction = json.loads(encodedAction)
-            type = encodedAction['type']
-            temp = json.loads(encodedAction['temp'])
+            type = encodedAction['type'] 
+            if encodedAction['temp'] != '': temp = json.loads(encodedAction['temp'])
             timestamp = encodedAction['timestamp']
             match type:
                     case "contruction":
@@ -84,10 +83,7 @@ class IO:
                             game.world.cheminement,timestamp, temp, game.mini_map)
                     case "save":
                         return Action(
-                            game.save.save,timestamp)
-
-        # Decode the json object into an Action object
-        # +++ YOUR CODE HERE +++ #
+                            game.game.save.save,timestamp)
 
     # Method @sendAction is used to send all action in @self.outputStack to all players (include sender)
     # @parameters: {
@@ -97,9 +93,11 @@ class IO:
 
     def sendActions(self, action: str, temp, timestamp=time.time()) -> int:
         # Step 1: Encode all action in @self.outputStack
-        temp = self._tempToStr(temp) if (temp is not None) else ''
-        mesg = {"type": action, "temp": temp, "timestamp": timestamp}
-        self.ipc.sendToNetwork("PRE:"+json.dumps(mesg)+":POST")
+        temp = self._tempToStr(temp) if (temp is not None) else None
+        action = {"type": action, "temp": temp, "timestamp": timestamp}
+        mesg = json.dump(mesg)
+        self.outputStack.append(mesg)
+        self.ipc.sendToNetwork("PRE:"+mesg+":POST")
 
     # Method @receiveActions is used to receive message from the other players and store in @self.inputStack
     # @parameters: {
@@ -107,9 +105,18 @@ class IO:
     #   @encodedAction: The received message, encoded version of actions.
     # }
     # @return: 0 if successfully receive or -1 if not
+    def listenGameState(self):
+        mesg = self.ipc.receiveFromNetwork()
+        if mesg:
+            if mesg == "!Loaded":
+                return True
+        return False
+    
+    
     def listening(self, game):
         mesg = self.ipc.receiveFromNetwork()
         if mesg:
+            # print(mesg)
             if not self.mesg:
                 self.mesg = mesg
             else:

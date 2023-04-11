@@ -106,15 +106,22 @@ int joinRoom(char *hostIPaddr, char *roomName)
 //  @room: the room we want to connect to create a P2P network
 //  @clientSocketFds: the list of used to write the new sockets we will create into
 // }
-// int connectToRoomNetwork(Room room, int **clientSocketFds) {
-//     // Step 1: verify if @clientSocketFds is NULL, if yes => return -1
-//     // Step 2: verify if *clientSocketFds is NULL, if yes => allocate it as an array of @room.maxPlayer element
-//     // Step 3: check if the current number of players of rooms (@room.currentNumber) is 2 or not?
-//     //      If yes, return 0 (2 means that the room contains only host and this players)
-//     // Step 4: do a for loop to create new connections to all of the members of room
-//     //      except the first and the last one (because they are the host and this player)
-//     // Step 5: write new created socket into *clientSocketFds
-    
+int connectToRoomNetwork(Room room, int **clientSocketFds) {
+    // Step 1: verify if @clientSocketFds is NULL, if yes => return -1
+    // Step 2: verify if *clientSocketFds is NULL, if yes => allocate it as an array of @room.maxPlayer element
+    // Step 3: check if the current number of players of rooms (@room.currentNumber) is 2 or not?
+    //      If yes, return 0 (2 means that the room contains only host and this players)
+    // Step 4: do a for loop to create new connections to all of the members of room
+    //      except the first and the last one (because they are the host and this player)
+    // Step 5: write new created socket into *clientSocketFds
+    if (clientSocketFds == NULL) return -1;
+
+    if (*clientSocketFds == NULL) clientSocketFds = malloc((room.maxPlayer+1)*sizeof(Player));
+
+    for (int i=1; i<room.currentNumber; ++i) { // the first person is exclusive cuz he is host
+
+    }
+}
     
 //     // Step 1: verify if @clientSocketFds is NULL, if yes => return -1
 //     if (clientSocketFds == NULL) {
@@ -216,48 +223,74 @@ void addPlayer(Room *room, Player *newPlayer)
 //  @newPlayerSocketFd: the socket fd of new player
 // }
 // @return: 0 if successfully send or -1 if not
-int sendGameStateToNewPlayer(char *filePath, int newPlayerSocketFd)
-{
-    // +++ YOUR CODE HERE +++ //
-    FILE *ptr;
-    fopen(filePath, "r");
-    if (ptr == NULL)
-    {
-        printf("file ");
+int sendGameStateToNewPlayer(char *filePath, int newPlayerSocketFd) {
+    // Open log
+    int log_fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
+    int fd = open(filePath, O_RDONLY);
+
+    char *buffer = malloc(369369);
+    memset(buffer, 0, 369369);
+
+    int valread;
+    if ((valread = read(fd, buffer, 369368)) < 0) {
+        free(buffer);
+        close(log_fd);
+        close(fd);
         return -1;
+    } else {
+        buffer[valread] = EOF;
+        write(log_fd, buffer, valread);
+        write(log_fd, '\n', 1);
+        close(log_fd);
+        if (send(newPlayerSocketFd, buffer, valread, 0) < 0) {
+            
+            close(fd);
+            free(buffer);
+            return -1;
+        } 
     }
-    char buffer[1024];
-    while (!feof(ptr))
-    {
-        size_t bytesRead = fread(buffer, sizeof(char), sizeof(buffer), ptr);
-        // Process the data in the buffer
-        if (send(newPlayerSocketFd, buffer, 1024, 0) == -1)
-        {
-            printf("Error sending gamestate to new player \n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    fclose(ptr);
+
+    free(buffer);
+    close(fd);
+
+    return 0;
 }
 
-int receivedFirstJoin(int newPlayerSocketFd, char *filePath)
-{
-    FILE *ptr;
-    char buffer[1024];
-    ssize_t bytesReceived;
-    ptr = fopen(filePath, "r+");
-    while ((bytesReceived = recv(newPlayerSocketFd, buffer, 1024, 0)) > 0)
-    {
-        if (fwrite(buffer, 1, bytesReceived, ptr) != bytesReceived)
-        {
-            perror("Failed to write data to file");
-            exit(1);
+int receiveFirstGameState(char *filePath, int hostSocketFd) {
+    // receive file data and write to file
+    int fd = open(filePath, O_RDWR | O_CREAT); 
+
+    if (fd <= 0) return -1;
+
+    char *buffer = malloc(369369);
+    memset(buffer, 0, 369369);
+
+    int log_fd = open("/home/parallels/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
+    int valread = recv(hostSocketFd, buffer, sizeof(buffer), 0);
+    do {
+        if (valread < 0) {
+            fclose(fd);
+            free(buffer);
+            return -1;
+        } else if (valread == 0) {
+            fclose(fd);
+            free(buffer);
+            return 0;   
+        } else {
+            write(log_fd, buffer, valread);
+            fclose(log_fd);
+            write(fd, buffer, valread);
+
         }
-    }
-    fclose(ptr);
+        int valread = recv(hostSocketFd, buffer, sizeof(buffer), 0);
+    } while (buffer[valread] != EOF);
+    fclose(fd);
+    free(buffer);  
+    
+    return 0;
 }
 
-int requestGameState(int msgid, char *filePath)
+int requestGameState(int mySocket)
 {
     // Step 1: Send the request to game via msgid
     //      The request has the form: "?GameState"
@@ -267,23 +300,18 @@ int requestGameState(int msgid, char *filePath)
     //      Step 3.2: if *results is NULL => allocate *results
     //      Step 3.3: write the results into results
 
-    // +++ YOUR CODE HERE +++ //
-    // FILE *fptr;
-    msg requestPython = {C_TO_PY, "?GameState"};
-    sprintf(requestPython.msg_text, "?GameState:%s", filePath);
-    msg GameState = {PY_TO_C, NULL};
-    if (msgsnd(msgid, &requestPython, sizeof(requestPython), 0) == -1)
-    {
-        printf("msgsnd ?GameState failed\n");
+    char* message = "PRE:{\"type\":\"save\",\"temp\": \"\",\"timestamp\":0}:POST\0";
+    if (send(mySocket, message, strlen(message), 0) < 0) {
+        return -1;
     }
-    if (msgrcv(msgid, &GameState, sizeof(GameState), PY_TO_C, 0) == -1)
-    {
-        printf("msgrev GameState Failed\n");
+    char *response = malloc(10);
+    int valread;
+    if ((valread = recv(mySocket, response, 9, 0)) < 0) {
+        return -1;
+    } else {
+        response[valread] = '\0';
+        if (strncmp(response, "!Done", 5) == 0) {
+            return 0;
+        }
     }
-    if (strcmp(GameState.msg_text, "Done") == 0)
-    {
-
-        return 0;
-    }
-    return 1;
 }

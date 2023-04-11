@@ -40,7 +40,7 @@ def createRoom(roomName: str, hostName: str):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     time.sleep(1)
     try:
-        s.connect(('127.0.01', 12345))
+        s.connect(('127.0.0.1', 12345))
 
     except socket.error.errno:
         pass

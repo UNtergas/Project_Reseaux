@@ -37,6 +37,7 @@ int sendRoomIn4(int newPlayerSocketFd, Room room);
 void addPlayer(Room *room, Player *newPlayer);
 
 int sendGameStateToNewPlayer(char *filePath, int newPlayerSocketFd);
-int requestGameState(int msgid, char *filePath);
+int receiveFirstGameState(char *filePath, int hostSocketFd);
+int requestGameState(int mySocket);
 
 #endif /* Session_h */

@@ -52,7 +52,7 @@ void *sendDiscoveringMessageThread(void *arg) {
         memset(&servaddr, 0, sizeof(servaddr));
         servaddr.sin_family = AF_INET;
         servaddr.sin_addr.s_addr = inet_addr(ip);
-        servaddr.sin_port = htons(54321);
+        servaddr.sin_port = htons(96996);
         socklen_t serv_length = sizeof(servaddr);
         
         

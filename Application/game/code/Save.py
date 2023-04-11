@@ -113,6 +113,7 @@ class Save():
                                 "time": time_under_effect
                             }
                         )
+        self.IO.ipc.sendToNetwork("!Done")
 
         if self.walkers.listWalker is not None:
             for pft in self.walkers.listWalker['Prefect']:
@@ -142,6 +143,7 @@ class Save():
         }
         with open("saves/save.json", "w") as savefile:
             json.dump(save, savefile)
+        self.IO.ipc.sendToNetwork('!Done')
 
     def getSavesNames():
         return ["chicken", "moscow", "save"]

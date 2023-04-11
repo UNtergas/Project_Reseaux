@@ -53,7 +53,7 @@ void *bindNewDiscoveringThread(void *arg) {
     memset(&hostAddr, 0, sizeof(hostAddr));
     hostAddr.sin_family = AF_INET;
     hostAddr.sin_addr.s_addr = INADDR_ANY;
-    hostAddr.sin_port = htons(54321);
+    hostAddr.sin_port = htons(96996);
     
     int host_len = sizeof(hostAddr);
     
@@ -200,11 +200,6 @@ void *mainThread(void *argv) {
             }
             else
             {
-                int fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
-
-                // Greeting message for joining the room
-                write(fd, "Successfully connected!\n", 24);
-
                 // Add the new socket to our player list
                 for (int i = 0; i < MAX_PLAYER+1; ++i)
                 {
@@ -228,7 +223,9 @@ void *mainThread(void *argv) {
                             {
                                 new_name = malloc(valread - 10);
                                 strncpy(new_name, buffer + 10, valread - 10);
+                                new_name[valread-10] = '\0';
                             }
+
                             
                             // +++ Initialize new player +++ //
                             Player newPlayer = initPlayer(new_ip_addr, new_name);
@@ -240,6 +237,27 @@ void *mainThread(void *argv) {
                             roomToStr(myRoom, room_in4);
 
                             send(new_socket, room_in4, strlen(room_in4), 0);
+
+                            char cwd[1024];
+                            if (getcwd(cwd, sizeof(cwd)) == NULL) {
+                                perror("getcwd() error");
+                            } 
+                            char *filePath = malloc(1024);
+                            sprintf(filePath, "%s/saves/save.json", cwd);
+
+                            
+                            int gameStateResponse = requestGameState(clientFds[0]);
+                            if (gameStateResponse == 0) {
+                                // sleep(3);
+                                int log_fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
+                                write(log_fd, "!Done\n", strlen("!Done\n"));
+                                close(log_fd);
+                                sendGameStateToNewPlayer(filePath, new_socket);
+                            } else {
+                                int log_fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
+                                write(log_fd, "BUOI TAO\n", strlen("BUOI TAO\n"));
+                                close(log_fd);
+                            }
                         }
                         break;
                     }
@@ -393,13 +411,31 @@ int main(int argc, char **argv) {
             perror("ERROR receiving room in4");
             exit(1);
         }
-        else
-        {
+        else {
             room_in4[val_recv] = '\0';
             write(1, room_in4, strlen(room_in4));
             strToRoom(room_in4, &myRoom);
-            // connectToRoomNetwork(myRoom, &clientFds);
+            int fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
+            write(fd, room_in4, strlen(room_in4));
+            write(fd, "\n", 1);
+            close(fd);
+            // connectToRoomNetwork(myRoom, &clientFds);           
         }
+
+        // receive current game state*
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) == NULL) {
+            perror("getcwd() error");
+        } 
+        char *filePath = malloc(1024);
+        sprintf(filePath, "%s/saves/save.json", cwd);
+
+        sleep(3);
+
+        if (receiveFirstGameState(filePath, first_socket) <= 0) {
+            exit(1);
+        } 
+
 
         // ++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
@@ -520,10 +556,12 @@ int main(int argc, char **argv) {
                                 // add player to the room
                                 addPlayer(&myRoom, &newPlayer);
                                 // Send the room information to the new player
-                                // char *room_in4 = malloc(4096);
-                                // roomToStr(myRoom, room_in4);
+                                char *room_in4 = malloc(4096);
+                                roomToStr(myRoom, room_in4);
 
-                                // send(new_socket, room_in4, strlen(room_in4), 0);
+                                
+                            } else {
+                                send(clientFds[0], "!Loaded", 7, 0);
                             }
                             break;
                         }
