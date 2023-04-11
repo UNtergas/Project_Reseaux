@@ -427,7 +427,6 @@ int main(int argc, char **argv) {
         char *filePath = malloc(1024);
         sprintf(filePath, "%s/saves/save.json", cwd);
 
-        sleep(3);
 
         // if (receiveFirstGameState(filePath, first_socket) <= 0) {
         //     exit(1);
@@ -552,10 +551,6 @@ int main(int argc, char **argv) {
 
                                 // add player to the room
                                 addPlayer(&myRoom, &newPlayer);
-                                // Send the room information to the new player
-                                char *room_in4 = malloc(4096);
-                                roomToStr(myRoom, room_in4);
-
                                 
                             } else {
                                 // send(clientFds[0], "!Loaded", 7, 0);
@@ -596,8 +591,7 @@ int main(int argc, char **argv) {
                             send(clientFds[0], buffer, strlen(buffer), 0);
                         }
                         free(buffer);
-                        // msg message;
-                        // int val_recv;
+
                     }
                 }
             }
