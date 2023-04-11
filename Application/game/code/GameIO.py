@@ -82,6 +82,7 @@ class IO:
                         return Action(
                             game.world.cheminement,timestamp, temp, game.mini_map)
                     case "save":
+                        self.sendGameState()
                         return Action(
                             game.game.save.save,timestamp)
 
@@ -111,6 +112,10 @@ class IO:
             if mesg == "!Loaded":
                 return True
         return False
+    
+    def sendGameState(self):
+        for mesg in self.outputStack:
+            self.ipc.sendToNetwork("PRE:"+mesg+":POST")
     
     
     def listening(self, game):

@@ -54,11 +54,11 @@ def SceneEventHandler(self, event):
             if room["roomName"] == self.box["inputbox"].text:
                 s = join(room["hostIP"],'John')
                 self.game.save = Save(self.box["inputbox"].text, s)
-                for i in range(100):
-                    if (self.game.save.IO.listenGameState()):
-                        print('Loading game......')
-                        # self.game.save.load('save')
-                        break                  
+                # for i in range(100):
+                #     if (self.game.save.IO.listenGameState()):
+                #         print('Loading game......')
+                #         # self.game.save.load('save')
+                #         break                  
                 self.game.switchScene(SCENE_GAME_ID)
                 self.box['inputbox'].text = ""
             break
