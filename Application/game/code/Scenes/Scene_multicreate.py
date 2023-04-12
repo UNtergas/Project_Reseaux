@@ -35,7 +35,7 @@ def SceneMultiCreateRun(self):
         self.images["fond"], (self.game.screen_width, self.game.screen_height)), (0, 0))
 
     pygame.draw.rect(self.game.screen, (180, 180, 180),
-                     (self.game.screen_width/2-300, self.game.screen_height/2-100, 600, 175))
+                     (self.game.screen_width/2-300, self.game.screen_height/2-150, 600, 250))
 
     for key in self.box.keys():
         self.box[key].show(self.game.screen)
