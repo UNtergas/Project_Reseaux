@@ -47,6 +47,8 @@ def SceneGameCreate(self):
     self.evenement = Evenement()
     self.H_R = self.game.save.walkers
 
+    #intiialize
+    self.game.save.IO.listening(self)
 
 
 def SceneGameRun(self):

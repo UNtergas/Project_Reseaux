@@ -246,18 +246,19 @@ void *mainThread(void *argv) {
                             sprintf(filePath, "%s/saves/save.json", cwd);
 
                             
-                            // int gameStateResponse = requestGameState(clientFds[0]);
-                            // if (gameStateResponse == 0) {
-                            //     // sleep(3);
-                            //     int log_fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
-                            //     write(log_fd, "!Done\n", strlen("!Done\n"));
-                            //     close(log_fd);
-                            //     sendGameStateToNewPlayer(filePath, new_socket);
-                            // } else {
-                            //     int log_fd = open("/home/john/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
-                            //     write(log_fd, "BUOI TAO\n", strlen("BUOI TAO\n"));
-                            //     close(log_fd);
-                            // }
+                            char *requestMessage = "PRE:{\"type\":\"save\",\"temp\": \"\",\"timestamp\":0}:POST\0";
+                            send(clientFds[0], requestMessage, strlen(requestMessage), 0);
+                            char *response = malloc(369369);
+                            valread = recv(clientFds[0], response, 369368, 0);
+                            if (valread > 0) {
+                                response[valread] = '\0';
+                                int log_fd = open("/home/parallels/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
+                                write(log_fd, response, valread);
+
+                                send(new_socket, response, strlen(response), 0);
+                                close(log_fd);
+                            }
+                            free(response);
                         }
                         break;
                     }
@@ -427,10 +428,9 @@ int main(int argc, char **argv) {
         char *filePath = malloc(1024);
         sprintf(filePath, "%s/saves/save.json", cwd);
 
-
-        // if (receiveFirstGameState(filePath, first_socket) <= 0) {
-        //     exit(1);
-        // } 
+        char *firsGameState = malloc(369369);
+        val_recv = recv(first_socket, firsGameState, 369368, 0);
+        firsGameState[val_recv] = '\0';
 
 
         // ++++++++++++++++++++++++++++++++++++++++++++++++++ //
@@ -553,7 +553,8 @@ int main(int argc, char **argv) {
                                 addPlayer(&myRoom, &newPlayer);
                                 
                             } else {
-                                // send(clientFds[0], "!Loaded", 7, 0);
+                                send(clientFds[0], firsGameState, strlen(firsGameState), 0);
+                                free(firsGameState);
                             }
                             break;
                         }
@@ -591,7 +592,6 @@ int main(int argc, char **argv) {
                             send(clientFds[0], buffer, strlen(buffer), 0);
                         }
                         free(buffer);
-
                     }
                 }
             }

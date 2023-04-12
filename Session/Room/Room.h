@@ -30,7 +30,7 @@ int destroyRoom(Room* room);
 int discorverRoom(char*** hostIPs, char*** roomNames);
 int joinRoom(char *hostIPaddr, char *roomName);
 
-int connectToRoomNetwork(Room room, int **clientSocketFds);
+int connectToRoomNetwork(Room room, int *clientSocketFds);
 
 int sendRoomIn4(int newPlayerSocketFd, Room room);
 

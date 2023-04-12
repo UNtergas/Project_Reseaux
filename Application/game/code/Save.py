@@ -56,7 +56,7 @@ class Save():
                     self.walkers.listWalker["Citizen"].append(citizen)
                     self.map.Building[x][y].habitant = citizen
                     self.map.Building[x][y].risk_fire = temp_build['risk']
-                    if temp_build['time_under_effect'] != 0:
+                    if temp_build['time'] != 0:
                         self.map.Building[x][y].onFire = True
                         self.map.Building[x][y].time_under_effect = temp_build['time']
                 case "Road":
@@ -142,7 +142,7 @@ class Save():
         }
         with open("saves/save.json", "w") as savefile:
             json.dump(save, savefile)
-        self.IO.ipc.sendToNetwork('!Done')
+        # self.IO.ipc.sendToNetwork('!Done')
 
     def getSavesNames():
         return ["chicken", "moscow", "save"]

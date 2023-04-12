@@ -243,24 +243,26 @@ int sendGameStateToNewPlayer(char *filePath, int newPlayerSocketFd) {
     char *buffer = malloc(369369);
     memset(buffer, 0, 369369);
 
-    int valread;
-    if ((valread = read(fd, buffer, 369368)) < 0) {
-        free(buffer);
-        close(log_fd);
-        close(fd);
-        return -1;
-    } else {
-        buffer[valread] = EOF;
-        write(log_fd, buffer, valread);
-        write(log_fd, '\n', 1);
-        close(log_fd);
-        if (send(newPlayerSocketFd, buffer, valread, 0) < 0) {
-            
-            close(fd);
+    int valread = 0;
+    do {
+        if ((valread = read(fd, buffer, 369368)) < 0) {
             free(buffer);
+            close(log_fd);
+            close(fd);
             return -1;
-        } 
+        } else {
+            write(log_fd, buffer, valread);
+            write(log_fd, '\n', 1);
+            close(log_fd);
+            if (send(newPlayerSocketFd, buffer, valread, 0) < 0) {
+                
+                close(fd);
+                free(buffer);
+                return -1;
+            } 
+        }
     }
+    while (buffer[valread] != EOF);
 
     free(buffer);
     close(fd);
@@ -278,8 +280,9 @@ int receiveFirstGameState(char *filePath, int hostSocketFd) {
     memset(buffer, 0, 369369);
 
     int log_fd = open("/home/parallels/Desktop/demo.log", O_RDWR | O_APPEND | O_CREAT);
-    int valread = recv(hostSocketFd, buffer, sizeof(buffer), 0);
+    int valread = 0;
     do {
+        valread = recv(hostSocketFd, buffer, sizeof(buffer), 0);
         if (valread < 0) {
             fclose(fd);
             free(buffer);
@@ -295,7 +298,8 @@ int receiveFirstGameState(char *filePath, int hostSocketFd) {
 
         }
         int valread = recv(hostSocketFd, buffer, sizeof(buffer), 0);
-    } while (buffer[valread] != EOF);
+    } 
+    while (buffer[valread] != EOF);
     fclose(fd);
     free(buffer);  
     

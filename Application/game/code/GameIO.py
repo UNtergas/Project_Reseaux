@@ -82,7 +82,7 @@ class IO:
                         return Action(
                             game.world.cheminement,timestamp, temp, game.mini_map)
                     case "save":
-                        self.sendGameState()
+                        self.sendGameState(game.game.save)
                         return Action(
                             game.game.save.save,timestamp)
 
@@ -96,7 +96,7 @@ class IO:
         # Step 1: Encode all action in @self.outputStack
         temp = self._tempToStr(temp) if (temp is not None) else None
         action = {"type": action, "temp": temp, "timestamp": timestamp}
-        mesg = json.dump(mesg)
+        mesg = json.dumps(action)
         self.outputStack.append(mesg)
         self.ipc.sendToNetwork("PRE:"+mesg+":POST")
 
@@ -106,18 +106,50 @@ class IO:
     #   @encodedAction: The received message, encoded version of actions.
     # }
     # @return: 0 if successfully receive or -1 if not
-    def listenGameState(self):
-        mesg = self.ipc.receiveFromNetwork()
-        if mesg:
-            if mesg == "!Loaded":
-                return True
-        return False
+    # def listenGameState(self):
+    #     mesg = self.ipc.receiveFromNetwork()
+    #     if mesg:
+    #         if not self.mesg:
+    #             self.mesg = mesg
+    #         else:
+    #             self.mesg =  self.mesg+ mesg
+    #         action_syntax =r'PRE:(.*?):POST'
+    #         actionlist=[]
+    #         while True:
+    #             result = self.extract_and_remove_action(action_syntax)
+    #             if result == None:
+    #                 break
+    #             actionlist.append(result)
+    #             for encodedAction in actionlist:
+    #                 action = self._strToAction(game,encodedAction)
+    #                 cho nay game o dau ra the
+    #                 self.inputStack.append(action)
+    #     return False
     
-    def sendGameState(self):
-        for mesg in self.outputStack:
-            self.ipc.sendToNetwork("PRE:"+mesg+":POST")
+    def sendGameState(self,save):
+        state = save.getJsonInstance()
+        self.ipc.sendToNetwork("PRE:"+state+":POST")
+
+    def receiveGameState(self):
+        with open('saves/save.json','w') as file:
+            file.write('')
+        state = None
+        while (state is None):
+            mesg = self.ipc.receiveFromNetwork()
+            if mesg:
+                if not self.mesg:
+                    self.mesg = mesg
+                else:
+                    self.mesg =  self.mesg+ mesg
+                syntax =r'PRE:(.*?):POST'
+                state = self.extract_and_remove_action(syntax)
+                if state is not None: 
+                    with open('saves/save.json','a') as file:
+                        file.write(state)
+                    return True
+            return False
     
-    
+
     def listening(self, game):
         mesg = self.ipc.receiveFromNetwork()
         if mesg:
@@ -140,7 +172,7 @@ class IO:
                 self.inputStack.append(action)
     def resolving(self):    
         if self.inputStack:
-            print(self.inputStack)
+            # print(self.inputStack)
             sorted_stack= sorted(self.inputStack, key=lambda x: x.timestamp)
             for action in sorted_stack:
                 if isinstance(action,Action):
