@@ -15,6 +15,10 @@ def SceneMultiJoin(self):
     self.box["inputbox"] = InputBox(
         self.game.screen_width/2, self.game.screen_height/2-30, 600, 45, lambda: pygame.event.post(pygame.event.Event(
             event_types["LaunchGame"], {"name": 1})), font2)
+    
+
+    self.box["namebox"] = InputBox(
+        self.game.screen_width/2, self.game.screen_height/2, 600, 45, lambda: None, font2)
 
     self.buttons['button_menu'] = Button_text(self.game.screen_width/2-150, self.game.screen_height /
                                               2+50, 300, 100, lambda: self.game.switchScene(SCENE_MENU_ID), "Back to Menu")
@@ -41,7 +45,12 @@ def SceneMultiJoinRun(self):
 
     text = font1.render("Enter the name of your room", 1, (0, 0, 0))
     self.game.screen.blit(text, (self.game.screen_width /
-                          2-text.get_width()/2, self.game.screen_height/2-100))
+                          2-text.get_width()/2, self.game.screen_height/2-150))
+    
+
+    text = font1.render("Enter your name", 1, (0, 0, 0))
+    self.game.screen.blit(text, (self.game.screen_width /
+                          2-text.get_width()/2, self.game.screen_height/2-60))
 
     pygame.display.flip()
 
@@ -52,7 +61,7 @@ def SceneEventHandler(self, event):
         print(rooms)
         for room in rooms:
             if room["roomName"] == self.box["inputbox"].text:
-                s = join(room["hostIP"],'John')
+                s = join(room["hostIP"], self.box["namebox"].text)
                 self.game.save = Save(self.box["inputbox"].text, s)
                 if (self.game.save.IO.receiveGameState()):
                     self.game.save.load('save')
